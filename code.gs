@@ -451,7 +451,7 @@ function buildNsEmailHtml(totalDrivers, netPcts, regionEntries, datastudioUrl, d
   var headerRow = '<th style="padding:10px 12px;text-align:left;background:#DC0032;color:white;border:1px solid #b0001f;min-width:180px">Region</th>';
   headerRow += '<th style="padding:10px 12px;text-align:center;background:#DC0032;color:white;border:1px solid #b0001f;min-width:70px">Drivers</th>';
   for (var w = 1; w <= 5; w++) {
-    headerRow += '<th style="padding:10px 12px;text-align:center;background:#DC0032;color:white;border:1px solid #b0001f;min-width:85px">Week ' + w + '<br><span style="font-size:10px;font-weight:400;opacity:0.85">Target: ' + weekTargets[w - 1] + '%</span></th>';
+    headerRow += '<th style="padding:10px 12px;text-align:center;background:#DC0032;color:white;border:1px solid #b0001f;min-width:95px">Week ' + w + '<br><span style="font-size:10px;font-weight:400;opacity:0.85">Target: ' + weekTargets[w - 1] + '%</span></th>';
   }
 
   var networkRow = '<tr style="background:#f0f0f0"><td style="padding:9px 12px;font-weight:700;color:#DC0032;border:1px solid #e0e0e0">&#127760; Network</td>';
@@ -469,7 +469,7 @@ function buildNsEmailHtml(totalDrivers, netPcts, regionEntries, datastudioUrl, d
 
   return '<!DOCTYPE html><html><head><meta charset="UTF-8"></head>'
     + '<body style="font-family:Arial,sans-serif;color:#333333;background:#f4f4f4;margin:0;padding:20px">'
-    + '<div style="max-width:720px;margin:0 auto;background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12)">'
+    + '<div style="max-width:900px;margin:0 auto;background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12)">'
     + '<div style="background:#DC0032;padding:24px 28px">'
     + '<div style="font-size:22px;font-weight:800;color:white;letter-spacing:-0.5px">DPD | New Starters vs Blueprint</div>'
     + '<div style="margin-top:6px;color:rgba(255,255,255,0.85);font-size:14px">Monday ' + dateStr + '</div>'
@@ -559,7 +559,7 @@ function buildDepotPdf(depotRows, dateStr) {
   sheet.setColumnWidth(1, 130);
   sheet.setColumnWidth(2, 160);
   sheet.setColumnWidth(3, 60);
-  for (var c = 4; c <= 8; c++) sheet.setColumnWidth(c, 110);
+  for (var c = 4; c <= 8; c++) sheet.setColumnWidth(c, 135);
   sheet.setFrozenRows(3);
 
   Utilities.sleep(1500);
