@@ -1,0 +1,3733 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --dpd-red: #dc0032;
+      --dpd-red-dark: #b00028;
+      --dpd-red-light: #ff1744;
+      --border-color: #e0e0e0;
+      --text-primary: #333;
+      --text-secondary: #666;
+      --bg-light: #f8f9fa;
+      --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #ffffff;
+      color: var(--text-primary);
+      overflow-x: hidden;
+    }
+
+    #mainContent {
+      zoom: 0.85;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, var(--dpd-red) 0%, #b8002a 100%);
+      color: white;
+      padding: 16px 36px;
+      box-shadow: 0 2px 8px rgba(180,0,40,0.35);
+      position: relative;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .header-content {
+      flex-shrink: 0;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin: 0;
+      text-transform: uppercase;
+    }
+
+    /* Controls Bar */
+    .controls {
+      background: white;
+      padding: 20px 40px;
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 0;
+      z-index: 99;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 15px;
+    }
+
+    .controls-row {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .filter-group label {
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .filter-group input[type="text"],
+    .filter-group input[type="number"] {
+      padding: 10px 12px;
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 14px;
+      background: white;
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+      min-width: 180px;
+    }
+
+    .filter-group input[type="text"]:focus,
+    .filter-group input[type="number"]:focus {
+      outline: none;
+      border-color: var(--dpd-red);
+      box-shadow: 0 0 0 3px rgba(220, 0, 50, 0.1);
+    }
+
+    .search-hint {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-weight: 400;
+      font-style: italic;
+      margin-top: 2px;
+    }
+
+    /* Custom Select Dropdown */
+    .custom-select {
+      position: relative;
+    }
+
+    .select-display {
+      padding: 8px 32px 8px 10px;
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 12px;
+      background: white;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 180px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .select-display:hover {
+      border-color: var(--dpd-red);
+    }
+
+    .select-display.open {
+      border-color: var(--dpd-red);
+      box-shadow: 0 0 0 3px rgba(220, 0, 50, 0.1);
+    }
+
+    .select-arrow {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      transition: transform 0.3s ease;
+      pointer-events: none;
+    }
+
+    .select-display.open .select-arrow {
+      transform: translateY(-50%) rotate(180deg);
+    }
+
+    .select-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      margin-top: 5px;
+      background: white;
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
+      box-shadow: var(--shadow-lg);
+      max-height: 300px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+    }
+
+    .select-dropdown.open {
+      display: block;
+    }
+
+    .select-search {
+      padding: 8px;
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 1;
+    }
+
+    .select-search input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .select-actions {
+      padding: 8px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      gap: 8px;
+      position: sticky;
+      top: 40px;
+      background: white;
+      z-index: 1;
+    }
+
+    .select-action-btn {
+      flex: 1;
+      padding: 6px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background: white;
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .select-action-btn:hover {
+      background: var(--bg-light);
+      border-color: var(--dpd-red);
+      color: var(--dpd-red);
+    }
+
+    .select-options {
+      padding: 4px;
+    }
+
+    .select-option {
+      padding: 6px 10px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 12px;
+      transition: all 0.2s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .select-option:hover {
+      background: var(--bg-light);
+    }
+
+    .select-option.selected {
+      background: rgba(220, 0, 50, 0.1);
+      color: var(--dpd-red);
+      font-weight: 600;
+    }
+
+    .option-only-btn {
+      padding: 2px 8px;
+      font-size: 11px;
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      cursor: pointer;
+      opacity: 0;
+      transition: all 0.2s ease;
+    }
+
+    .select-option:hover .option-only-btn {
+      opacity: 1;
+    }
+
+    .option-only-btn:hover {
+      background: var(--dpd-red);
+      color: white;
+      border-color: var(--dpd-red);
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary {
+      background: var(--dpd-red);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--dpd-red-dark);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: var(--dpd-red);
+      border: 2px solid var(--dpd-red);
+    }
+
+    .btn-secondary:hover {
+      background: var(--dpd-red);
+      color: white;
+    }
+
+    .btn-reset {
+      background: white;
+      color: var(--text-secondary);
+      border: 2px solid var(--border-color);
+    }
+
+    .btn-reset:hover {
+      background: var(--bg-light);
+      border-color: var(--text-secondary);
+    }
+
+    /* Table Container - Shows up to 13 rows with side padding */
+    .table-container {
+      padding: 0;
+      overflow: auto;
+      max-height: 700px;
+      position: relative;
+      border: 40px solid white;
+      border-top-width: 20px;
+      background: white;
+      isolation: isolate;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 13px;
+      background: white;
+      box-shadow: var(--shadow-md);
+      border-radius: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    thead::before {
+      content: '';
+      position: absolute;
+      top: -30px;
+      left: -10px;
+      right: -10px;
+      height: 30px;
+      background: white;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    /* Main header row */
+    th {
+      background: linear-gradient(180deg, var(--dpd-red) 0%, var(--dpd-red-dark) 100%);
+      color: white;
+      padding: 20px 12px;
+      text-align: left;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s ease;
+      white-space: nowrap;
+      border-right: 1px solid rgba(255, 255, 255, 0.2);
+      position: sticky;
+      top: 0;
+      z-index: 45;
+    }
+
+    th:last-child {
+      border-right: none;
+    }
+
+    th:hover {
+      background: var(--dpd-red-light);
+    }
+
+    th.sorted::after {
+      content: ' ▼';
+      font-size: 10px;
+    }
+
+    th.sorted.asc::after {
+      content: ' ▲';
+    }
+
+    /* Period headers (Week/BP grouping) */
+    th.period-header {
+      background: linear-gradient(180deg, var(--dpd-red) 0%, var(--dpd-red-dark) 100%);
+      color: white;
+      padding: 16px 12px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 12px;
+      border-bottom: none;
+      position: sticky;
+      top: 0;
+      z-index: 46;
+    }
+
+    /* Sub-headers (Worked/Earnings) */
+    th.sub-header {
+      background: linear-gradient(180deg, #a80029 0%, #8a0022 100%);
+      color: white;
+      padding: 12px 8px;
+      text-align: center;
+      font-weight: 500;
+      font-size: 10px;
+      text-transform: uppercase;
+      position: sticky;
+      top: 48px;
+      z-index: 46;
+      border-top: none;
+    }
+
+    /* Worked cells centered */
+    td.worked-cell {
+      text-align: center;
+    }
+
+    td {
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--border-color);
+      border-right: 1px solid var(--border-color);
+      white-space: nowrap;
+      color: var(--text-primary);
+      background: white;
+    }
+
+    td:last-child {
+      border-right: none;
+    }
+
+    tbody {
+      position: static;
+    }
+
+    tbody tr {
+      transition: background 0.2s ease;
+    }
+
+    tbody tr:hover {
+      background: var(--bg-light) !important;
+    }
+
+    tbody tr:hover td {
+      background: var(--bg-light) !important;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Sticky Columns - Always visible when scrolling horizontally */
+    .sticky-col {
+      position: sticky !important;
+      z-index: 2;
+      box-shadow: 2px 0 4px rgba(0,0,0,0.05);
+      background: white;
+      color: var(--text-primary) !important;
+    }
+
+    thead th.sticky-col {
+      z-index: 48 !important;
+      background: linear-gradient(180deg, var(--dpd-red) 0%, var(--dpd-red-dark) 100%);
+      color: white !important;
+    }
+
+    thead th.sub-header.sticky-col {
+      z-index: 48 !important;
+      background: linear-gradient(180deg, #a80029 0%, #8a0022 100%);
+      color: white !important;
+      top: 48px;
+    }
+
+    thead th.period-header.sticky-col {
+      z-index: 48 !important;
+    }
+
+    tbody td.sticky-col {
+      z-index: 2;
+      background: white;
+      color: var(--text-primary) !important;
+    }
+
+    tbody tr:hover td.sticky-col {
+      background: var(--bg-light) !important;
+      color: var(--text-primary) !important;
+    }
+
+    .col-0 { left: 0 !important; min-width: 100px; max-width: 100px; }
+    .col-1 { left: 100px !important; min-width: 150px; max-width: 150px; }
+    .col-2 { left: 250px !important; min-width: 80px; max-width: 80px; }
+    .col-3 { left: 330px !important; min-width: 150px; max-width: 150px; }
+    .col-4 { left: 480px !important; min-width: 120px; max-width: 120px; }
+    .col-5 { left: 600px !important; min-width: 130px; max-width: 130px; }
+    .col-6 { left: 730px !important; min-width: 110px; max-width: 110px; }
+    .col-7 { left: 840px !important; min-width: 130px; max-width: 130px; }
+
+    /* Loading */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .spinner {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid var(--dpd-red);
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      margin-top: 20px;
+      font-size: 16px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1001;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+      background: white;
+      margin: 3% auto;
+      padding: 0;
+      width: 750px;
+      max-width: 90%;
+      max-height: 90vh;
+      border-radius: 12px;
+      box-shadow: var(--shadow-lg);
+      animation: slideDown 0.3s ease;
+      overflow-y: auto;
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, var(--dpd-red) 0%, var(--dpd-red-dark) 100%);
+      color: white;
+      padding: 24px 30px;
+      border-radius: 12px 12px 0 0;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .modal-header h3 {
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .modal-body {
+      padding: 30px;
+    }
+
+    .color-mode-selector {
+      margin-bottom: 30px;
+      padding: 20px;
+      background: var(--bg-light);
+      border-radius: 8px;
+      border: 2px solid var(--border-color);
+    }
+
+    .color-mode-selector h4 {
+      color: var(--dpd-red);
+      font-size: 16px;
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
+
+    .color-mode-options {
+      display: flex;
+      gap: 12px;
+    }
+
+    .color-mode-option {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .color-mode-option:hover {
+      border-color: var(--dpd-red);
+    }
+
+    .color-mode-option.active {
+      border-color: var(--dpd-red);
+      background: rgba(220, 0, 50, 0.1);
+      color: var(--dpd-red);
+      font-weight: 700;
+    }
+
+    .vehicle-section {
+      margin-bottom: 35px;
+    }
+
+    .vehicle-section h4 {
+      color: var(--dpd-red);
+      font-size: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border-color);
+      font-weight: 700;
+    }
+
+    .color-setting {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      margin-bottom: 18px;
+      padding: 15px;
+      background: var(--bg-light);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .color-setting-label {
+      font-size: 14px;
+      color: var(--text-primary);
+      font-weight: 600;
+      min-width: 100px;
+    }
+
+    .color-input-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex: 1;
+    }
+
+    .color-picker-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 2px solid var(--border-color);
+      transition: all 0.3s ease;
+    }
+
+    .color-picker-wrapper:hover {
+      border-color: var(--dpd-red);
+    }
+
+    .color-picker-wrapper input[type="color"] {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .color-preview {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .threshold-inputs {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex: 1;
+    }
+
+    .input-with-currency {
+      position: relative;
+      flex: 1;
+    }
+
+    .input-with-currency::before {
+      content: '£';
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    .input-with-currency input {
+      width: 100%;
+      padding: 10px 12px 10px 28px;
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .input-with-currency input:focus {
+      outline: none;
+      border-color: var(--dpd-red);
+      box-shadow: 0 0 0 3px rgba(220, 0, 50, 0.1);
+    }
+
+    .range-separator {
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .modal-footer {
+      padding: 20px 30px;
+      background: var(--bg-light);
+      border-radius: 0 0 12px 12px;
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      position: sticky;
+      bottom: 0;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .modal-footer-left {
+      display: flex;
+      gap: 12px;
+    }
+
+    .modal-footer-right {
+      display: flex;
+      gap: 12px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* Stats Bar */
+    .stats-bar {
+      background: var(--bg-light);
+      padding: 15px 40px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      gap: 30px;
+      font-size: 14px;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .stat-value {
+      color: var(--dpd-red);
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #000000;
+      border-radius: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #333333;
+    }
+
+    /* ===== DRIVER PROFILE OVERLAY ===== */
+    .fd-link {
+      color: var(--dpd-red);
+      cursor: pointer;
+      font-weight: 600;
+      text-decoration: underline;
+      text-decoration-style: dotted;
+      text-underline-offset: 2px;
+    }
+    .fd-link:hover { color: var(--dpd-red-dark); }
+
+    .profile-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+    }
+
+    .profile-window {
+      background: white;
+      border-radius: 12px;
+      width: 98vw;
+      max-width: 1800px;
+      height: 97vh;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: slideDown 0.25s ease;
+    }
+
+    .profile-topbar {
+      background: linear-gradient(135deg, var(--dpd-red) 0%, var(--dpd-red-dark) 100%);
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .profile-topbar h2 { font-size: 20px; font-weight: 700; margin: 0; }
+
+    .profile-close-btn {
+      background: rgba(255,255,255,0.18);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.35);
+      padding: 7px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: none;
+      transition: background 0.2s;
+    }
+    .profile-close-btn:hover { background: rgba(255,255,255,0.32); transform: none; box-shadow: none; }
+
+    .driver-actions-btn {
+      background: var(--dpd-red);
+      color: white;
+      border: 2px solid white;
+      padding: 7px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: none;
+      transition: background 0.2s, opacity 0.2s;
+      text-decoration: none;
+      display: inline-block;
+      white-space: nowrap;
+    }
+    .driver-actions-btn:hover { opacity: 0.85; transform: none; box-shadow: none; }
+
+    .profile-stats-grid {
+      display: flex;
+      gap: 8px;
+      padding: 12px 20px;
+      background: var(--bg-light);
+      border-bottom: 1px solid var(--border-color);
+      overflow-x: auto;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    .profile-stat-card {
+      background: white;
+      border-radius: 7px;
+      padding: 9px 13px;
+      border: 1px solid var(--border-color);
+      min-width: 100px;
+      flex-shrink: 0;
+    }
+    .profile-stat-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 3px;
+    }
+    .profile-stat-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+    .profile-stat-note {
+      font-size: 10px;
+      color: var(--dpd-red);
+      margin-top: 2px;
+      font-style: italic;
+    }
+
+    .profile-filters {
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      gap: 14px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      background: white;
+      flex-shrink: 0;
+    }
+    .profile-filter-group { display: flex; flex-direction: column; gap: 4px; }
+    .profile-filter-group label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .profile-filter-group input[type="date"],
+    .profile-filter-group select {
+      padding: 6px 10px;
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--text-primary);
+      background: white;
+    }
+    .profile-filter-group input[type="date"]:focus,
+    .profile-filter-group select:focus { outline: none; border-color: var(--dpd-red); }
+
+    .profile-fd-note {
+      font-size: 12px;
+      color: var(--dpd-red);
+      font-weight: 600;
+      padding: 6px 10px;
+      background: rgba(220,0,50,0.06);
+      border-radius: 6px;
+      border: 1px solid rgba(220,0,50,0.2);
+      display: none;
+      align-self: center;
+    }
+
+    .profile-loading {
+      padding: 50px;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .profile-content {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .profile-left {
+      flex: 1;
+      min-width: 0;
+      overflow-y: auto;
+      padding: 18px 22px;
+      border-right: 1px solid var(--border-color);
+    }
+
+    .profile-right {
+      width: 472px;
+      flex-shrink: 0;
+      overflow-y: auto;
+      padding: 16px;
+      background: var(--bg-light);
+    }
+
+    .profile-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+      padding-bottom: 5px;
+      border-bottom: 2px solid var(--dpd-red);
+      display: inline-block;
+    }
+
+    .chart-wrapper {
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+    }
+
+    .profile-tables {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    .profile-table-card {
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .profile-table-header {
+      background: linear-gradient(135deg, var(--dpd-red) 0%, var(--dpd-red-dark) 100%);
+      color: white;
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .route-tabs {
+      display: flex;
+      background: var(--bg-light);
+      border-bottom: 1px solid var(--border-color);
+    }
+    .route-tab {
+      flex: 1;
+      padding: 6px 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      box-shadow: none;
+      border-radius: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.15s;
+    }
+    .route-tab:hover { background: rgba(220,0,50,0.05); color: var(--dpd-red); transform: none; box-shadow: none; }
+    .route-tab.active { color: var(--dpd-red); border-bottom-color: var(--dpd-red); background: white; }
+
+    .table-scroll { overflow: visible; }
+
+    .profile-inner-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .profile-window thead {
+      position: static !important;
+      z-index: auto !important;
+      box-shadow: none !important;
+    }
+    .profile-window thead::before { display: none !important; }
+    .profile-window .profile-inner-table th {
+      background: #f0f0f0 !important;
+      color: #555 !important;
+      position: static !important;
+      z-index: auto !important;
+      cursor: default !important;
+      font-size: 10px !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.5px !important;
+      padding: 7px 10px !important;
+      border-right: none !important;
+      text-align: left !important;
+      white-space: normal !important;
+      border-bottom: 1px solid var(--border-color) !important;
+      box-shadow: none !important;
+      top: auto !important;
+    }
+    .profile-window .profile-inner-table th:hover { background: #f0f0f0 !important; }
+    .profile-inner-table td {
+      padding: 7px 10px !important;
+      border-bottom: 1px solid #f5f5f5 !important;
+      border-right: none !important;
+      background: white !important;
+    }
+    .profile-inner-table tbody tr:last-child td { border-bottom: none !important; }
+    .profile-inner-table tbody tr:hover td { background: var(--bg-light) !important; }
+
+    /* Calendar */
+    .calendar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+
+    .cal-month {
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .cal-month-title {
+      background: linear-gradient(135deg, var(--dpd-red) 0%, var(--dpd-red-dark) 100%);
+      color: white;
+      text-align: center;
+      padding: 5px 4px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .cal-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 1px;
+      padding: 2px;
+      background: var(--border-color);
+    }
+    .cal-header-cell {
+      background: #f0f0f0;
+      text-align: center;
+      font-size: 9px;
+      font-weight: 700;
+      color: #777;
+      padding: 2px 0;
+    }
+    .cal-cell {
+      background: white;
+      text-align: center;
+      font-size: 10px;
+      padding: 3px 1px;
+      min-height: 19px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cal-cell.empty { background: white; }
+    .cal-cell.future { background: white; color: #ddd; }
+    .cal-cell.not-worked { background: #e0e0e0; color: #888; }
+    .cal-cell.worked-amber { background: #fff3cd; color: #856404; font-weight: 700; }
+    .cal-cell.worked-green { background: #d4edda; color: #155724; font-weight: 700; }
+
+    .cal-legend {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .cal-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+    .cal-legend-dot { width: 11px; height: 11px; border-radius: 2px; flex-shrink: 0; }
+
+/* Nav switch button in header */
+.nav-switch-btn {
+  background: var(--dpd-red);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.25);
+  padding: 9px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  box-shadow: none;
+  letter-spacing: 0.2px;
+}
+.nav-switch-btn:hover {
+  background: var(--dpd-red-dark);
+  transform: none;
+  box-shadow: none;
+  opacity: 0.9;
+}
+.toggle-group {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-light);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 3px;
+}
+.toggle-btn {
+  padding: 7px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-secondary);
+  box-shadow: none;
+  transition: all 0.2s;
+}
+.toggle-btn:hover { background: rgba(220,0,50,0.08); color: var(--dpd-red); transform: none; box-shadow: none; }
+.toggle-btn.active { background: var(--dpd-red); color: white; box-shadow: var(--shadow-sm); }
+.toggle-btn.active:hover { background: var(--dpd-red-dark); transform: none; }
+.ns-summary-container { padding: 20px 40px; }
+.ns-summary-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+  background: white;
+  box-shadow: var(--shadow-md);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.ns-summary-table thead th {
+  background: linear-gradient(180deg, var(--dpd-red) 0%, var(--dpd-red-dark) 100%);
+  color: white;
+  padding: 14px 12px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  border-right: 1px solid rgba(255,255,255,0.2);
+  position: static;
+  cursor: default;
+}
+.ns-summary-table thead th:first-child { text-align: left; min-width: 200px; }
+.ns-summary-table tbody td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  text-align: center;
+  white-space: nowrap;
+}
+.ns-summary-table tbody td:last-child { border-right: none; }
+.ns-summary-table tbody tr:last-child td { border-bottom: none; }
+.ns-summary-table tbody tr:hover td { background: rgba(0,0,0,0.02) !important; }
+.ns-row-network td { background: #f0f0f0 !important; font-weight: 700; font-size: 13px; }
+.ns-row-network td:first-child { color: var(--dpd-red); }
+.ns-row-region td { background: #fafafa !important; font-weight: 600; font-size: 12px; }
+.ns-row-region td:first-child { padding-left: 20px; }
+.ns-row-depot td { background: white !important; font-size: 12px; }
+.ns-row-depot td:first-child { padding-left: 36px; color: var(--text-secondary); }
+.ns-pct-cell { font-weight: 700; border-radius: 4px; font-size: 12px; }
+.ns-pct-cell.green { background: #d4edda !important; color: #155724; }
+.ns-pct-cell.amber { background: #fff3cd !important; color: #856404; }
+.ns-pct-cell.red { background: #f8d7da !important; color: #721c24; }
+.ns-pct-cell.no-data { color: #ccc; }
+.ns-driver-container { padding: 20px 40px; }
+.ns-week-grid { width: 100%; border-collapse: collapse; font-size: 12px; }
+.ns-week-grid th {
+  background: var(--bg-light) !important; color: var(--text-secondary) !important;
+  padding: 6px 8px !important; font-size: 10px !important; font-weight: 700 !important;
+  text-align: center !important; border: 1px solid var(--border-color) !important;
+  text-transform: uppercase; position: static !important; cursor: default !important;
+  white-space: nowrap; letter-spacing: 0.5px !important;
+}
+.ns-week-grid td {
+  border: 1px solid var(--border-color) !important; padding: 7px 6px !important;
+  text-align: center !important; font-size: 12px !important; min-width: 44px; background: white;
+}
+.ns-week-grid .week-label-cell {
+  font-weight: 700 !important; font-size: 10px !important; color: var(--text-secondary) !important;
+  background: var(--bg-light) !important; text-align: left !important; padding-left: 8px !important; white-space: nowrap;
+}
+.ns-day-contracted-worked { background: #b8e6c8 !important; color: #155724 !important; font-weight: 700 !important; }
+.ns-day-extra-worked { background: #ffeaa0 !important; color: #7d5a00 !important; font-weight: 700 !important; }
+.ns-day-contracted-missed { background: #f5b7c0 !important; color: #721c24 !important; font-weight: 700 !important; }
+.ns-day-not-contracted { background: #dde1e7 !important; color: #8a929e !important; }
+.ns-day-future { background: #f0f2f5 !important; color: #c0c6ce !important; }
+.ns-cal-legend { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+.ns-cal-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); }
+.ns-cal-legend-dot { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+.ns-week-breakdown-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px; }
+.ns-week-breakdown-table th {
+  background: var(--bg-light) !important; color: var(--text-secondary) !important;
+  padding: 7px 10px !important; font-size: 10px !important; font-weight: 700 !important;
+  text-transform: uppercase; text-align: center !important; border-bottom: 1px solid var(--border-color) !important;
+  position: static !important; cursor: default !important;
+}
+.ns-week-breakdown-table td {
+  padding: 7px 10px !important; text-align: center !important;
+  border-bottom: 1px solid #f5f5f5 !important; border-right: none !important;
+  background: white !important; font-size: 12px !important;
+}
+.ns-week-breakdown-table tbody tr:last-child td { border-bottom: none !important; }
+.ns-week-breakdown-table td:first-child { text-align: left !important; font-weight: 600 !important; }
+#earningsLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  min-height: 300px;
+}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div id="mainContent">
+  <div class="header">
+    <div class="header-content">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:4px;height:28px;background:rgba(255,255,255,0.7);border-radius:2px;flex-shrink:0"></div>
+        <h1 id="pageTitle">New Starters</h1>
+      </div>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center">
+      <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);padding:8px 16px;border-radius:6px;max-width:440px;font-size:12px;line-height:1.5;color:rgba(255,255,255,0.75)">
+        ⚠️ High access users: select a Region, Area, or Depot for better performance.
+      </div>
+    </div>
+    <button id="pageNavBtn" class="nav-switch-btn" onclick="switchPage()">Go to Driver Earnings →</button>
+  </div>
+
+  <div id="nsPage">
+    <div id="nsLoading" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 40px">
+      <div class="spinner"></div>
+      <div class="loading-text">Loading new starters data...</div>
+    </div>
+    <div id="nsControls" class="controls hidden">
+      <!-- Row 1: view toggles + shared filters -->
+      <div class="controls-row" style="justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px">
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <div class="toggle-group" style="align-self:flex-end">
+            <button id="nsBtnSummary" class="toggle-btn active" onclick="setNsView('summary')">Summary</button>
+            <button id="nsBtnDrivers" class="toggle-btn" onclick="setNsView('drivers')">Drivers</button>
+          </div>
+          <!-- Start Week — always visible -->
+          <div class="filter-group" style="gap:4px">
+            <label>Start Week</label>
+            <div class="custom-select" id="nsStartWeekSelect" style="min-width:210px">
+              <div class="select-display" style="min-width:210px;"><span class="select-text">All Selected</span><span class="select-arrow">▼</span></div>
+              <div class="select-dropdown" style="min-width:210px">
+                <div class="select-search"><input type="text" placeholder="Search weeks..." style=""></div>
+                <div class="select-actions">
+                  <button class="select-action-btn" onclick="selectAllOptions('nsStartWeekSelect')">Select All</button>
+                  <button class="select-action-btn" onclick="clearAllOptions('nsStartWeekSelect')">Clear All</button>
+                </div>
+                <div class="select-options"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Region — always visible -->
+          <div class="filter-group" style="gap:4px">
+            <label>Region</label>
+            <div class="custom-select" id="nsRegionSelect" style="min-width:190px">
+              <div class="select-display" style="min-width:190px;"><span class="select-text">All Selected</span><span class="select-arrow">▼</span></div>
+              <div class="select-dropdown" style="min-width:190px">
+                <div class="select-search"><input type="text" placeholder="Search regions..." style=""></div>
+                <div class="select-actions">
+                  <button class="select-action-btn" onclick="selectAllOptions('nsRegionSelect')">Select All</button>
+                  <button class="select-action-btn" onclick="clearAllOptions('nsRegionSelect')">Clear All</button>
+                </div>
+                <div class="select-options"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Depot — always visible -->
+          <div class="filter-group" style="gap:4px">
+            <label>Depot</label>
+            <div class="custom-select" id="nsDepotSelect" style="min-width:210px">
+              <div class="select-display" style="min-width:210px;"><span class="select-text">All Selected</span><span class="select-arrow">▼</span></div>
+              <div class="select-dropdown" style="min-width:210px">
+                <div class="select-search"><input type="text" placeholder="Search depots..." style=""></div>
+                <div class="select-actions">
+                  <button class="select-action-btn" onclick="selectAllOptions('nsDepotSelect')">Select All</button>
+                  <button class="select-action-btn" onclick="clearAllOptions('nsDepotSelect')">Clear All</button>
+                </div>
+                <div class="select-options"></div>
+              </div>
+            </div>
+          </div>
+          <!-- FD Search — always visible -->
+          <div style="display:flex;align-items:center;gap:8px;align-self:flex-end;padding-bottom:2px">
+            <span style="font-size:12px;font-weight:600;color:var(--text-secondary);white-space:nowrap">Search FD Numbers</span>
+            <input type="text" id="nsFdSearch" placeholder="e.g., 12345" style="padding:8px 10px;border:2px solid var(--border-color);border-radius:6px;font-size:12px;width:140px">
+            <span style="font-size:11px;color:var(--text-secondary);white-space:nowrap;font-style:italic">Comma separated</span>
+          </div>
+        </div>
+        <div class="toggle-group" style="align-self:flex-end">
+          <button id="nsBtnAvg" class="toggle-btn active" onclick="setNsMetric('avg')">Avg Stops</button>
+          <button id="nsBtnMax" class="toggle-btn" onclick="setNsMetric('max')">Max Stops</button>
+        </div>
+      </div>
+      <!-- Row 2: driver-only filters (now empty — can be removed entirely) -->
+      <div id="nsDriverFilters" class="hidden"></div>
+      <div class="stats-bar" id="nsStatsBar" style="padding:8px 0;border-bottom:none;margin-top:8px">
+        <div class="stat-item"><span class="stat-label">Total New Starters:</span><span class="stat-value" id="nsStatDrivers">0</span></div>
+      </div>
+    </div>
+    <div id="nsSummaryView"></div>
+    <div id="nsDriverView" style="display:none"></div>
+  </div>
+
+  <div id="earningsPage" style="display:none">
+  <div class="controls">
+    <div class="controls-row" style="margin-bottom: 15px;">
+      <button class="btn-primary" onclick="toggleView()">
+        Switch to <span id="viewToggle">BP</span> View
+      </button>
+      <button class="btn-secondary" onclick="openColorModal()">
+        🎨 Adjust Colour Formatting
+      </button>
+    </div>
+
+    <div class="controls-grid">
+      <div class="filter-group">
+        <label>Search FD Numbers</label>
+        <input type="text" id="fdSearch" placeholder="e.g., 12345, 67890, 11223">
+        <span class="search-hint">Multiple FDs split with comma</span>
+      </div>
+
+      <div class="filter-group">
+        <label>YTD Earnings Under</label>
+        <input type="number" id="ytdUnderFilter" placeholder="e.g., 2000" min="0" step="100">
+        <span class="search-hint">Shows drivers earning below this amount</span>
+      </div>
+
+      <div class="filter-group">
+        <label>Depot</label>
+        <div class="custom-select" id="depotSelect">
+          <div class="select-display">
+            <span class="select-text">All Selected</span>
+            <span class="select-arrow">▼</span>
+          </div>
+          <div class="select-dropdown">
+            <div class="select-search">
+              <input type="text" placeholder="Search depots...">
+            </div>
+            <div class="select-actions">
+              <button class="select-action-btn" onclick="selectAllOptions('depotSelect')">Select All</button>
+              <button class="select-action-btn" onclick="clearAllOptions('depotSelect')">Clear All</button>
+            </div>
+            <div class="select-options"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label>Region</label>
+        <div class="custom-select" id="regionSelect">
+          <div class="select-display">
+            <span class="select-text">All Selected</span>
+            <span class="select-arrow">▼</span>
+          </div>
+          <div class="select-dropdown">
+            <div class="select-search">
+              <input type="text" placeholder="Search regions...">
+            </div>
+            <div class="select-actions">
+              <button class="select-action-btn" onclick="selectAllOptions('regionSelect')">Select All</button>
+              <button class="select-action-btn" onclick="clearAllOptions('regionSelect')">Clear All</button>
+            </div>
+            <div class="select-options"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label>Area</label>
+        <div class="custom-select" id="areaSelect">
+          <div class="select-display">
+            <span class="select-text">All Selected</span>
+            <span class="select-arrow">▼</span>
+          </div>
+          <div class="select-dropdown">
+            <div class="select-search">
+              <input type="text" placeholder="Search areas...">
+            </div>
+            <div class="select-actions">
+              <button class="select-action-btn" onclick="selectAllOptions('areaSelect')">Select All</button>
+              <button class="select-action-btn" onclick="clearAllOptions('areaSelect')">Clear All</button>
+            </div>
+            <div class="select-options"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label>Vehicle Type</label>
+        <div class="custom-select" id="vehicleSelect">
+          <div class="select-display">
+            <span class="select-text">All Selected</span>
+            <span class="select-arrow">▼</span>
+          </div>
+          <div class="select-dropdown">
+            <div class="select-search">
+              <input type="text" placeholder="Search vehicle types...">
+            </div>
+            <div class="select-actions">
+              <button class="select-action-btn" onclick="selectAllOptions('vehicleSelect')">Select All</button>
+              <button class="select-action-btn" onclick="clearAllOptions('vehicleSelect')">Clear All</button>
+            </div>
+            <div class="select-options"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label>Van Type</label>
+        <div class="custom-select" id="vanTypeSelect">
+          <div class="select-display">
+            <span class="select-text">All Selected</span>
+            <span class="select-arrow">▼</span>
+          </div>
+          <div class="select-dropdown">
+            <div class="select-search">
+              <input type="text" placeholder="Search van types...">
+            </div>
+            <div class="select-actions">
+              <button class="select-action-btn" onclick="selectAllOptions('vanTypeSelect')">Select All</button>
+              <button class="select-action-btn" onclick="clearAllOptions('vanTypeSelect')">Clear All</button>
+            </div>
+            <div class="select-options"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label>Period/Week</label>
+        <div class="custom-select" id="periodSelect">
+          <div class="select-display">
+            <span class="select-text">All Selected</span>
+            <span class="select-arrow">▼</span>
+          </div>
+          <div class="select-dropdown">
+            <div class="select-search">
+              <input type="text" placeholder="Search periods...">
+            </div>
+            <div class="select-actions">
+              <button class="select-action-btn" onclick="selectAllOptions('periodSelect')">Select All</button>
+              <button class="select-action-btn" onclick="clearAllOptions('periodSelect')">Clear All</button>
+            </div>
+            <div class="select-options"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-bar hidden" id="statsBar">
+    <div class="stat-item">
+      <span class="stat-label">Total Drivers:</span>
+      <span class="stat-value" id="statDrivers">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Total YTD Earnings:</span>
+      <span class="stat-value" id="statEarnings">£0.00</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Avg per Driver:</span>
+      <span class="stat-value" id="statAvg">£0.00</span>
+    </div>
+    <div class="stat-item" style="margin-left:auto;gap:10px">
+      <button class="btn-secondary" id="newStartersBtn" onclick="toggleNewStarters()" style="padding: 8px 16px; font-size: 13px;">New Starters Only</button>
+      <button class="btn-secondary" id="periodOrderBtn" onclick="togglePeriodOrder()" style="padding: 8px 16px; font-size: 13px;">Newest First ▼</button>
+      <button class="btn-primary" onclick="exportToCSV()" style="padding: 8px 16px; font-size: 13px;">Export to CSV</button>
+    </div>
+  </div>
+
+  <div id="earningsLoading">
+    <div class="spinner"></div>
+    <div class="loading-text">Loading driver earnings data...</div>
+  </div>
+
+  <div id="tableContainer" class="table-container hidden"></div>
+
+  </div>
+  </div><!-- end #mainContent -->
+
+  <!-- ===== DRIVER PROFILE OVERLAY ===== -->
+  <div id="driverProfileOverlay" class="profile-overlay" style="display:none" onclick="handleProfileOverlayClick(event)">
+    <div class="profile-window">
+
+      <div class="profile-topbar">
+        <h2 id="profileTitle">Driver Profile</h2>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button class="driver-actions-btn" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSfv2eUtIXNFTo3wqg75oJ9cEV023pm_VkMdFZdWYmMwuqSE0A/viewform?usp=pp_url&entry.1795041842=' + encodeURIComponent(profileDriverRow ? profileDriverRow.area_number : '') + '&entry.1525836161=' + encodeURIComponent(profileDriverRow ? profileDriverRow.DeliveryDepotName : '') + '&entry.579324981=' + encodeURIComponent(profileDriverRow ? profileDriverRow.fd_number : ''), '_blank')">Raise Action</button>
+          <button class="driver-actions-btn" onclick="window.open('https://datastudio.google.com/reporting/709f0b02-5880-4694-ab24-73ebe6ba519e/page/p_5q0pewdo2d?params=%7B%22df957%22:%22include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580' + (profileDriverRow ? profileDriverRow.fd_number : '') + '%22%7D', '_blank')">View Driver Actions</button>
+          <button class="profile-close-btn" onclick="closeDriverProfile()">✕ Close</button>
+        </div>
+      </div>
+
+      <div class="profile-stats-grid" id="profileStats"></div>
+
+      <div class="profile-filters">
+        <div class="profile-filter-group">
+          <label>From</label>
+          <input type="date" id="profileDateFrom" onchange="refreshProfileView()">
+        </div>
+        <div class="profile-filter-group">
+          <label>To</label>
+          <input type="date" id="profileDateTo" onchange="refreshProfileView()">
+        </div>
+        <div class="profile-filter-group" style="justify-content:flex-end">
+          <label>&nbsp;</label>
+          <button class="btn-secondary" style="padding:6px 14px;font-size:12px;font-weight:600;white-space:nowrap" onclick="setLast30Days()">Last 30 Days</button>
+        </div>
+        <div class="profile-filter-group">
+          <label>Driver Code</label>
+          <select id="profileDriverSelect" onchange="refreshProfileView()">
+            <option value="">All Drivers</option>
+          </select>
+        </div>
+        <div class="profile-fd-note" id="profileFdNote">⚠️ Earnings shown at FD level regardless of driver selection</div>
+      </div>
+
+      <div class="profile-loading" id="profileLoading">
+        <div class="spinner" style="width:40px;height:40px;border-width:4px;margin:0 auto 12px auto"></div>
+        Loading route data...
+      </div>
+
+      <div class="profile-content" id="profileContent" style="display:none">
+
+        <!-- Left: chart + tables -->
+        <div class="profile-left">
+          <div class="chart-wrapper">
+            <div class="profile-section-title">Daily Stops</div>
+            <div style="position:relative;height:260px" id="stopsChartWrap">
+              <canvas id="stopsChart"></canvas>
+            </div>
+          </div>
+
+          <div class="profile-tables">
+            <div class="profile-table-card">
+              <div class="profile-table-header">Driver Codes</div>
+              <div class="table-scroll" id="driverCodeTableBody"></div>
+            </div>
+
+            <div class="profile-table-card">
+              <div class="profile-table-header">Route Numbers</div>
+              <div class="route-tabs">
+                <button class="route-tab active" id="routeTabWeekday" onclick="renderRouteTable(getProfileFiltered(),'weekday')">Mon–Fri</button>
+                <button class="route-tab" id="routeTabWeekend" onclick="renderRouteTable(getProfileFiltered(),'weekend')">Weekend</button>
+              </div>
+              <div class="table-scroll" id="routeTableBody"></div>
+            </div>
+
+            <div class="profile-table-card">
+              <div class="profile-table-header">Days of Week</div>
+              <div class="table-scroll" id="dayOfWeekTableBody"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: 12-month calendar -->
+        <div class="profile-right">
+          <div class="profile-section-title">2026 Calendar</div>
+          <div id="profileCalendar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== NS DRIVER PROFILE OVERLAY ===== -->
+  <div id="nsDriverProfileOverlay" class="profile-overlay" style="display:none" onclick="handleNsProfileOverlayClick(event)">
+    <div class="profile-window">
+      <div class="profile-topbar">
+        <h2 id="nsProfileTitle">Driver Profile</h2>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div class="toggle-group" style="background:rgba(255,255,255,0.15);border-radius:6px;padding:3px">
+            <button id="nsProfileBtnAvg" class="toggle-btn active" onclick="setNsProfileMetric('avg')" style="color:white;background:rgba(255,255,255,0.2)">Avg Stops</button>
+            <button id="nsProfileBtnMax" class="toggle-btn" onclick="setNsProfileMetric('max')" style="color:rgba(255,255,255,0.7)">Max Stops</button>
+          </div>
+          <button class="profile-close-btn" onclick="closeNsDriverProfile()">✕ Close</button>
+        </div>
+      </div>
+      <div class="profile-stats-grid" id="nsProfileStats"></div>
+      <div class="profile-content" id="nsProfileContent">
+        <div class="profile-left" style="max-width:560px;flex:0 0 560px">
+          <div class="profile-section-title" style="display:block;margin-bottom:12px">10-Week Schedule</div>
+          <div id="nsWeekCalendar"></div>
+          <div class="profile-section-title" style="display:block;margin:18px 0 12px">Actual Calendar</div>
+          <div id="nsActualCalendar"></div>
+        </div>
+        <div class="profile-right" style="flex:1">
+          <div class="profile-section-title" style="display:block;margin-bottom:12px">Weekly Progression</div>
+          <div class="chart-wrapper">
+            <div style="position:relative;height:320px" id="nsChartWrap">
+              <canvas id="nsProgressChart"></canvas>
+            </div>
+          </div>
+          <div id="nsWeekBreakdown"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="colorModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Colour Formatting Settings</h3>
+      </div>
+      <div class="modal-body">
+        <!-- Color Mode Selector -->
+        <div class="color-mode-selector">
+          <h4>Colour Formatting Mode</h4>
+          <div class="color-mode-options">
+            <div class="color-mode-option" id="colorModeYtd" onclick="setColorMode('ytd')">
+              <div style="font-weight: 600; margin-bottom: 5px;">YTD Earnings</div>
+              <div style="font-size: 12px; color: var(--text-secondary);">Colour by total earnings</div>
+            </div>
+            <div class="color-mode-option active" id="colorModePeriod" onclick="setColorMode('period')">
+              <div style="font-weight: 600; margin-bottom: 5px;">Per Period</div>
+              <div style="font-size: 12px; color: var(--text-secondary);">Colour by week/BP earnings</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="vehicle-section">
+          <h4>Own Vehicle Thresholds</h4>
+
+          <!-- Color Range 1 -->
+          <div class="color-setting">
+            <div class="color-input-group">
+              <div class="color-picker-wrapper">
+                <input type="color" id="ownColor1" value="#d4edda">
+                <span class="color-preview">Colour 1</span>
+              </div>
+              <div class="threshold-inputs">
+                <div class="input-with-currency">
+                  <!-- DEFAULT COLOUR FORMATTING DISABLED: Start with empty/null values -->
+                  <input type="number" id="ownMin1" placeholder="From" min="0" step="100">
+                </div>
+                <span class="range-separator">to</span>
+                <div class="input-with-currency">
+                  <input type="number" id="ownMax1" placeholder="To" min="0" step="100">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Color Range 2 -->
+          <div class="color-setting">
+            <div class="color-input-group">
+              <div class="color-picker-wrapper">
+                <input type="color" id="ownColor2" value="#fff3cd">
+                <span class="color-preview">Colour 2</span>
+              </div>
+              <div class="threshold-inputs">
+                <div class="input-with-currency">
+                  <input type="number" id="ownMin2" placeholder="From" min="0" step="100">
+                </div>
+                <span class="range-separator">to</span>
+                <div class="input-with-currency">
+                  <input type="number" id="ownMax2" placeholder="From" min="0" step="100">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Color Range 3 -->
+          <div class="color-setting">
+            <div class="color-input-group">
+              <div class="color-picker-wrapper">
+                <input type="color" id="ownColor3" value="#f8d7da">
+                <span class="color-preview">Colour 3</span>
+              </div>
+              <div class="threshold-inputs">
+                <div class="input-with-currency">
+                  <input type="number" id="ownMin3" placeholder="From" min="0" step="100">
+                </div>
+                <span class="range-separator">to</span>
+                <div class="input-with-currency">
+                  <input type="number" id="ownMax3" placeholder="To" min="0" step="100">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 15px; text-align: right;">
+            <button class="btn-secondary" onclick="applyToBoth()" style="font-size: 13px; padding: 8px 16px;">
+              Apply to Both
+            </button>
+          </div>
+        </div>
+
+        <div class="vehicle-section">
+          <h4>Lease Hire Thresholds</h4>
+
+          <!-- Color Range 1 -->
+          <div class="color-setting">
+            <div class="color-input-group">
+              <div class="color-picker-wrapper">
+                <input type="color" id="leaseColor1" value="#d4edda">
+                <span class="color-preview">Colour 1</span>
+              </div>
+              <div class="threshold-inputs">
+                <div class="input-with-currency">
+                  <input type="number" id="leaseMin1" placeholder="From" min="0" step="100">
+                </div>
+                <span class="range-separator">to</span>
+                <div class="input-with-currency">
+                  <input type="number" id="leaseMax1" placeholder="To" min="0" step="100">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Color Range 2 -->
+          <div class="color-setting">
+            <div class="color-input-group">
+              <div class="color-picker-wrapper">
+                <input type="color" id="leaseColor2" value="#fff3cd">
+                <span class="color-preview">Colour 2</span>
+              </div>
+              <div class="threshold-inputs">
+                <div class="input-with-currency">
+                  <input type="number" id="leaseMin2" placeholder="From" min="0" step="100">
+                </div>
+                <span class="range-separator">to</span>
+                <div class="input-with-currency">
+                  <input type="number" id="leaseMax2" placeholder="To" min="0" step="100">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Color Range 3 -->
+          <div class="color-setting">
+            <div class="color-input-group">
+              <div class="color-picker-wrapper">
+                <input type="color" id="leaseColor3" value="#f8d7da">
+                <span class="color-preview">Colour 3</span>
+              </div>
+              <div class="threshold-inputs">
+                <div class="input-with-currency">
+                  <input type="number" id="leaseMin3" placeholder="From" min="0" step="100">
+                </div>
+                <span class="range-separator">to</span>
+                <div class="input-with-currency">
+                  <input type="number" id="leaseMax3" placeholder="To" min="0" step="100">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="modal-footer-left">
+          <button class="btn-reset" onclick="resetColorFormatting()">Reset to Defaults</button>
+        </div>
+        <div class="modal-footer-right">
+          <button class="btn-secondary" onclick="closeColorModal()">Cancel</button>
+          <button class="btn-primary" onclick="applyColors()">Apply Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let data = [];
+    let schema = [];
+    let currentView = 'week'; // Default to week view
+    let sortCol = null;
+    let sortAsc = true;
+    let periodsDesc = false;
+    let showNewStartersOnly = false;
+    let colorMode = 'period'; // 'ytd' or 'period'
+    let activeWeeks = []; // Weeks that have at least one driver with > 0 days worked
+    let activeBPs = []; // BPs that have at least one driver with > 0 days worked
+
+    // NS globals
+    let nsData = [];
+    let nsDataLoaded = false;
+    let earningsDataLoaded = false;
+    let currentPage = 'ns';
+    let nsViewMode = 'summary';
+    let nsMetricMode = 'avg';
+    let nsProfileMetric = 'avg';
+    let nsSortCol = null;
+    let nsSortAsc = true;
+    let nsRegionSortWeek = null;
+    let nsRegionSortAsc = true;
+    let nsDepotSortWeek = null;
+    let nsDepotSortAsc = true;
+    let nsProfileRow = null;
+    let nsProfileChart = null;
+
+    // Custom select state
+    const selectStates = {
+      depotSelect: { selected: [], allOptions: [] },
+      regionSelect: { selected: [], allOptions: [] },
+      areaSelect: { selected: [], allOptions: [] },
+      vehicleSelect: { selected: [], allOptions: [] },
+      vanTypeSelect: { selected: [], allOptions: [] },
+      periodSelect: { selected: [], allOptions: [] },
+      nsRegionSelect: { selected: [], allOptions: [] },
+      nsDepotSelect: { selected: [], allOptions: [] },
+      nsStartWeekSelect: { selected: [], allOptions: [] }
+    };
+
+    window.onload = () => {
+      console.log('Page loaded, requesting data...');
+
+      // Setup FD search input
+      document.getElementById('fdSearch').addEventListener('input', () => {
+        renderTable();
+        updateStats();
+      });
+
+      // Setup YTD Under filter
+      document.getElementById('ytdUnderFilter').addEventListener('input', () => {
+        renderTable();
+        updateStats();
+      });
+
+      // Setup custom selects
+      setupCustomSelects();
+
+      // Close profile overlay on Escape
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          const nsOverlay = document.getElementById('nsDriverProfileOverlay');
+          if (nsOverlay && nsOverlay.style.display !== 'none') { closeNsDriverProfile(); return; }
+          const overlay = document.getElementById('driverProfileOverlay');
+          if (overlay && overlay.style.display !== 'none') closeDriverProfile();
+        }
+      });
+
+      // Close dropdowns when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.custom-select')) {
+          document.querySelectorAll('.select-dropdown').forEach(dropdown => {
+            dropdown.classList.remove('open');
+          });
+          document.querySelectorAll('.select-display').forEach(display => {
+            display.classList.remove('open');
+          });
+        }
+      });
+
+      // Load NS data (primary)
+      google.script.run
+        .withSuccessHandler(handleNsDataSuccess)
+        .withFailureHandler(handleNsDataError)
+        .getNewStarterData();
+
+      // Load earnings data in background
+      google.script.run
+        .withSuccessHandler(handleDataSuccess)
+        .withFailureHandler(handleDataError)
+        .getDriverData();
+    };
+
+    function setupCustomSelects() {
+      Object.keys(selectStates).forEach(selectId => {
+        const selectEl = document.getElementById(selectId);
+        const displayEl = selectEl.querySelector('.select-display');
+        const dropdownEl = selectEl.querySelector('.select-dropdown');
+        const searchInput = selectEl.querySelector('.select-search input');
+
+        displayEl.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isOpen = dropdownEl.classList.contains('open');
+
+          // Close all other dropdowns
+          document.querySelectorAll('.select-dropdown').forEach(dd => dd.classList.remove('open'));
+          document.querySelectorAll('.select-display').forEach(d => d.classList.remove('open'));
+
+          if (!isOpen) {
+            dropdownEl.classList.add('open');
+            displayEl.classList.add('open');
+            searchInput.value = '';
+            searchInput.focus();
+            filterOptions(selectId, '');
+          }
+        });
+
+        searchInput.addEventListener('input', (e) => {
+          filterOptions(selectId, e.target.value);
+        });
+
+        searchInput.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+      });
+    }
+
+    function populateCustomSelect(selectId, options) {
+      const state = selectStates[selectId];
+      state.allOptions = options;
+      state.selected = [...options]; // All selected by default
+
+      const selectEl = document.getElementById(selectId);
+      const optionsContainer = selectEl.querySelector('.select-options');
+
+      optionsContainer.innerHTML = options.map(option => `
+        <div class="select-option selected" data-value="${option}">
+          <span>${option}</span>
+          <button class="option-only-btn" onclick="selectOnly('${selectId}', '${option}', event)">Only</button>
+        </div>
+      `).join('');
+
+      // Add click handlers
+      optionsContainer.querySelectorAll('.select-option').forEach(optionEl => {
+        optionEl.addEventListener('click', (e) => {
+          if (e.target.classList.contains('option-only-btn')) return;
+          toggleOption(selectId, optionEl.dataset.value);
+        });
+      });
+
+      updateSelectDisplay(selectId);
+    }
+
+    function toggleOption(selectId, value) {
+      const state = selectStates[selectId];
+      const index = state.selected.indexOf(value);
+
+      if (index > -1) {
+        state.selected.splice(index, 1);
+      } else {
+        state.selected.push(value);
+      }
+
+      const selectEl = document.getElementById(selectId);
+      const optionEl = selectEl.querySelector(`.select-option[data-value="${value}"]`);
+      optionEl.classList.toggle('selected');
+
+      updateSelectDisplay(selectId);
+      if (selectId.startsWith('ns')) { renderNsView(); updateNsStats(); } else { renderTable(); updateStats(); }
+    }
+
+    function selectOnly(selectId, value, event) {
+      event.stopPropagation();
+      const state = selectStates[selectId];
+      state.selected = [value];
+
+      const selectEl = document.getElementById(selectId);
+      selectEl.querySelectorAll('.select-option').forEach(optionEl => {
+        if (optionEl.dataset.value === value) {
+          optionEl.classList.add('selected');
+        } else {
+          optionEl.classList.remove('selected');
+        }
+      });
+
+      updateSelectDisplay(selectId);
+      if (selectId.startsWith('ns')) { renderNsView(); updateNsStats(); } else { renderTable(); updateStats(); }
+
+      // Close dropdown
+      selectEl.querySelector('.select-dropdown').classList.remove('open');
+      selectEl.querySelector('.select-display').classList.remove('open');
+    }
+
+    function selectAllOptions(selectId) {
+      const state = selectStates[selectId];
+      state.selected = [...state.allOptions];
+
+      const selectEl = document.getElementById(selectId);
+      selectEl.querySelectorAll('.select-option').forEach(optionEl => {
+        optionEl.classList.add('selected');
+      });
+
+      updateSelectDisplay(selectId);
+      if (selectId.startsWith('ns')) { renderNsView(); updateNsStats(); } else { renderTable(); updateStats(); }
+    }
+
+    function clearAllOptions(selectId) {
+      const state = selectStates[selectId];
+      state.selected = [];
+
+      const selectEl = document.getElementById(selectId);
+      selectEl.querySelectorAll('.select-option').forEach(optionEl => {
+        optionEl.classList.remove('selected');
+      });
+
+      updateSelectDisplay(selectId);
+      if (selectId.startsWith('ns')) { renderNsView(); updateNsStats(); } else { renderTable(); updateStats(); }
+    }
+
+    function filterOptions(selectId, searchText) {
+      const selectEl = document.getElementById(selectId);
+      const options = selectEl.querySelectorAll('.select-option');
+
+      options.forEach(optionEl => {
+        const value = optionEl.dataset.value.toLowerCase();
+        if (value.includes(searchText.toLowerCase())) {
+          optionEl.style.display = 'flex';
+        } else {
+          optionEl.style.display = 'none';
+        }
+      });
+    }
+
+    function updateSelectDisplay(selectId) {
+      const state = selectStates[selectId];
+      const selectEl = document.getElementById(selectId);
+      const textEl = selectEl.querySelector('.select-text');
+
+      if (state.selected.length === 0) {
+        textEl.textContent = 'None Selected';
+      } else if (state.selected.length === state.allOptions.length) {
+        textEl.textContent = 'All Selected';
+      } else if (state.selected.length === 1) {
+        textEl.textContent = state.selected[0];
+      } else {
+        textEl.textContent = `${state.selected.length} Selected`;
+      }
+    }
+
+    function identifyActivePeriods() {
+      // Identify weeks with at least one driver having > 0 days worked
+      activeWeeks = [];
+      for (let week = 1; week <= 52; week++) {
+        const hasData = data.some(driver => {
+          const days = driver['Week_' + week + '_Days'];
+          return days && parseFloat(days) > 0;
+        });
+        if (hasData) {
+          activeWeeks.push(week);
+        }
+      }
+
+      // Identify BPs with at least one driver having > 0 days worked
+      activeBPs = [];
+      for (let bp = 1; bp <= 13; bp++) {
+        const hasData = data.some(driver => {
+          const days = driver['BP' + bp + '_Days'];
+          return days && parseFloat(days) > 0;
+        });
+        if (hasData) {
+          activeBPs.push(bp);
+        }
+      }
+
+      console.log('Active Weeks:', activeWeeks);
+      console.log('Active BPs:', activeBPs);
+    }
+
+    function handleDataSuccess(result) {
+      console.log('Data received:', result);
+
+      if (!result.success) {
+        handleDataError(result.error);
+        return;
+      }
+
+      schema = result.schema;
+      data = result.rows.map(row => {
+        let obj = {};
+        schema.forEach((field, i) => {
+          obj[field.name] = row.f[i].v;
+        });
+        return obj;
+      });
+
+      // Compute derived fields per driver
+      data.forEach(row => {
+        const ytdDays = parseFloat(row.YTD_Days_Worked) || 0;
+        const ytdEarnings = parseFloat(row.YTD_Earnings) || 0;
+
+        // Average daily earnings = total YTD earnings / total days worked
+        row.Avg_Daily_Earnings = ytdDays > 0 ? ytdEarnings / ytdDays : 0;
+
+        // Average days per week, only counting weeks where at least 1 day was worked
+        let weeksWorked = 0;
+        for (let w = 1; w <= 52; w++) {
+          if ((parseFloat(row['Week_' + w + '_Days']) || 0) >= 1) weeksWorked++;
+        }
+        row.Avg_Days_Week = weeksWorked > 0 ? ytdDays / weeksWorked : 0;
+      });
+
+      console.log('Processed ' + data.length + ' driver records');
+      identifyActivePeriods();
+      populateFilters();
+
+      // Default sort: Avg Daily Earnings descending
+      sortCol = 'Avg_Daily_Earnings';
+      sortAsc = false;
+      data.sort((a, b) => (parseFloat(b.Avg_Daily_Earnings) || 0) - (parseFloat(a.Avg_Daily_Earnings) || 0));
+
+      renderTable();
+      updateStats();
+
+      earningsDataLoaded = true;
+      if (currentPage === 'earnings') {
+        document.getElementById('earningsLoading').style.display = 'none';
+        document.getElementById('tableContainer').classList.remove('hidden');
+        document.getElementById('statsBar').classList.remove('hidden');
+      }
+    }
+
+    function handleDataError(error) {
+      console.error('Error loading data:', error);
+      document.getElementById('earningsLoading').innerHTML = `
+        <div style="text-align: center;">
+          <div style="font-size: 48px; color: var(--dpd-red); margin-bottom: 20px;">⚠️</div>
+          <div style="font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 10px;">
+            Error Loading Data
+          </div>
+          <div style="font-size: 14px; color: var(--text-secondary); max-width: 500px;">
+            ${error || 'An unexpected error occurred. Please refresh the page and try again.'}
+          </div>
+        </div>
+      `;
+    }
+
+    function populateFilters() {
+      const depots = [...new Set(data.map(d => d.DeliveryDepotName))].filter(Boolean).sort();
+      const regions = [...new Set(data.map(d => d.DeliveryDepotRegion))].filter(Boolean).sort();
+      const areas = [...new Set(data.map(d => d.area_number))].filter(Boolean).sort((a, b) => {
+        // Convert to numbers for proper numeric sorting
+        const numA = parseFloat(a);
+        const numB = parseFloat(b);
+        return numA - numB;
+      });
+      const vehicles = ['Own Vehicle', 'Lease Hire'];
+      const vanTypes = [...new Set(data.map(d => d.VanType))].filter(Boolean).sort();
+
+      populateCustomSelect('depotSelect', depots);
+      populateCustomSelect('regionSelect', regions);
+      populateCustomSelect('areaSelect', areas);
+      populateCustomSelect('vehicleSelect', vehicles);
+      populateCustomSelect('vanTypeSelect', vanTypes);
+      populatePeriodFilter();
+    }
+
+    function toggleNewStarters() {
+      showNewStartersOnly = !showNewStartersOnly;
+      const btn = document.getElementById('newStartersBtn');
+      btn.textContent = showNewStartersOnly ? 'All Drivers' : 'New Starters Only';
+      btn.className = showNewStartersOnly ? 'btn-primary' : 'btn-secondary';
+      renderTable();
+      updateStats();
+    }
+
+    function togglePeriodOrder() {
+      periodsDesc = !periodsDesc;
+      const btn = document.getElementById('periodOrderBtn');
+      btn.textContent = periodsDesc ? 'Oldest First ▲' : 'Newest First ▼';
+      renderTable();
+    }
+
+    function toggleView() {
+      currentView = currentView === 'bp' ? 'week' : 'bp';
+      document.getElementById('viewToggle').textContent = currentView === 'bp' ? 'Week' : 'BP';
+      populatePeriodFilter();
+      renderTable();
+    }
+
+    function populatePeriodFilter() {
+      // Only show periods that have at least one driver with > 0 days worked
+      const options = currentView === 'bp' ?
+        activeBPs.map(bp => `BP${bp}`) :
+        activeWeeks.map(week => `Week ${week}`);
+
+      populateCustomSelect('periodSelect', options);
+    }
+
+    function getFiltered() {
+      const depots = selectStates.depotSelect.selected;
+      const regions = selectStates.regionSelect.selected;
+      const areas = selectStates.areaSelect.selected;
+      const vehicles = selectStates.vehicleSelect.selected;
+      const vanTypes = selectStates.vanTypeSelect.selected;
+
+      // Treat "all selected" the same as "none selected" to avoid filtering out null/undefined values
+      const allDepotsSelected = depots.length === selectStates.depotSelect.allOptions.length;
+      const allRegionsSelected = regions.length === selectStates.regionSelect.allOptions.length;
+      const allAreasSelected = areas.length === selectStates.areaSelect.allOptions.length;
+      const allVehiclesSelected = vehicles.length === selectStates.vehicleSelect.allOptions.length;
+      const allVanTypesSelected = vanTypes.length === selectStates.vanTypeSelect.allOptions.length;
+
+      // Get FD search input
+      const fdSearchInput = document.getElementById('fdSearch').value.trim();
+      const fdSearchList = fdSearchInput ? fdSearchInput.split(',').map(fd => fd.trim()).filter(fd => fd) : [];
+
+      // Get YTD Under filter
+      const ytdUnder = document.getElementById('ytdUnderFilter').value.trim();
+      const ytdUnderValue = ytdUnder ? parseFloat(ytdUnder) : null;
+
+      return data.filter(d => {
+        const matchesDepot = depots.length === 0 || allDepotsSelected || depots.includes(d.DeliveryDepotName);
+        const matchesRegion = regions.length === 0 || allRegionsSelected || regions.includes(d.DeliveryDepotRegion);
+        // Convert area_number to string for comparison since dropdown values are strings
+        const matchesArea = areas.length === 0 || allAreasSelected || areas.includes(String(d.area_number));
+        const matchesVehicle = vehicles.length === 0 || allVehiclesSelected || vehicles.includes(d.vehicle_basis);
+        const matchesVanType = vanTypes.length === 0 || allVanTypesSelected || vanTypes.includes(d.VanType);
+
+        // If FD search has values, filter by FD number
+        const matchesFD = fdSearchList.length === 0 || fdSearchList.includes(String(d.fd_number));
+
+        // YTD Under filter
+        const matchesYTD = ytdUnderValue === null || (parseFloat(d.YTD_Earnings) || 0) < ytdUnderValue;
+
+        const matchesNewStarter = !showNewStartersOnly || String(d.new_starter).toUpperCase() === 'TRUE';
+
+        return matchesDepot && matchesRegion && matchesArea && matchesVehicle && matchesVanType && matchesFD && matchesYTD && matchesNewStarter;
+      });
+    }
+
+    function renderTable() {
+      const filtered = getFiltered();
+
+      // Get selected periods from the filter
+      const selectedPeriodOptions = selectStates.periodSelect.selected;
+      let periods = [];
+
+      if (selectedPeriodOptions.length === 0) {
+        // If nothing selected, show nothing
+        periods = [];
+      } else {
+        // Parse selected periods to get their numbers
+        periods = selectedPeriodOptions.map(opt => {
+          if (currentView === 'bp') {
+            return parseInt(opt.replace('BP', ''));
+          } else {
+            return parseInt(opt.replace('Week ', ''));
+          }
+        });
+      }
+
+      periods.sort((a, b) => periodsDesc ? b - a : a - b);
+
+      // Create table with grouped headers
+      let html = '<table><thead>';
+
+      // First row: Main headers including period groupings
+      html += '<tr>';
+      html += `<th class="sticky-col col-0" rowspan="2" onclick="sortTable('fd_number')">FD Number</th>`;
+      html += `<th class="sticky-col col-1" rowspan="2" onclick="sortTable('First_name')">Driver Name</th>`;
+      html += `<th class="sticky-col col-2" rowspan="2" onclick="sortTable('VanType')">Van Type</th>`;
+      html += `<th class="sticky-col col-3" rowspan="2" onclick="sortTable('DeliveryDepotName')">Depot</th>`;
+      html += `<th class="sticky-col col-4" rowspan="2" onclick="sortTable('vehicle_basis')">Vehicle Type</th>`;
+      html += `<th class="sticky-col col-5" rowspan="2" onclick="sortTable('unique_routes')">Unique Routes (30 days)</th>`;
+      html += `<th class="sticky-col col-6" rowspan="2" onclick="sortTable('Avg_Days_Week')">Avg Days/Week</th>`;
+      html += `<th class="sticky-col col-7" rowspan="2" onclick="sortTable('Avg_Daily_Earnings')">Avg Daily Earnings</th>`;
+
+      // Period headers with colspan - only show selected
+      periods.forEach(p => {
+        const label = currentView === 'bp' ? `BP ${p}` : `Week ${p}`;
+        html += `<th class="period-header" colspan="2">${label}</th>`;
+      });
+      html += '</tr>';
+
+      // Second row: Sub-headers (Worked/Earnings)
+      html += '<tr>';
+      periods.forEach(p => {
+        const prefix = currentView === 'bp' ? 'BP' : 'Week_';
+        html += `<th class="sub-header" onclick="sortTable('${prefix}${p}_Days')">Worked</th>`;
+        html += `<th class="sub-header" onclick="sortTable('${prefix}${p}_Earnings')">Earnings</th>`;
+      });
+      html += '</tr>';
+
+      html += '</thead><tbody>';
+
+      // Table rows
+      filtered.forEach(row => {
+        // Row color based on YTD if in YTD mode
+        const rowColor = colorMode === 'ytd' ? getColor(row.YTD_Earnings, row.vehicle_basis, row.VanType) : 'white';
+
+        html += `<tr>`;
+        html += `<td class="sticky-col col-0" style="background:${rowColor} !important"><span class="fd-link" onclick="openDriverProfile('${row.fd_number}')">${row.fd_number || ''}</span></td>`;
+        html += `<td class="sticky-col col-1" style="background:${rowColor} !important"><span class="fd-link" onclick="openDriverProfile('${row.fd_number}')">${(row.First_name || '') + ' ' + (row.Surname || '')}</span></td>`;
+        html += `<td class="sticky-col col-2" style="background:${rowColor} !important">${row.VanType || ''}</td>`;
+        html += `<td class="sticky-col col-3" style="background:${rowColor} !important">${row.DeliveryDepotName || ''}</td>`;
+        html += `<td class="sticky-col col-4" style="background:${rowColor} !important">${row.vehicle_basis || ''}</td>`;
+        html += `<td class="sticky-col col-5" style="background:${rowColor} !important">${row.unique_routes != null ? row.unique_routes : '—'}</td>`;
+        html += `<td class="sticky-col col-6" style="background:${rowColor} !important">${(row.Avg_Days_Week || 0).toFixed(2)}</td>`;
+        html += `<td class="sticky-col col-7" style="background:${rowColor} !important">${formatCurrency(row.Avg_Daily_Earnings)}</td>`;
+
+        periods.forEach(p => {
+          const prefix = currentView === 'bp' ? 'BP' : 'Week_';
+
+          // Color each cell based on period earnings if in period mode
+          const earnings = row[prefix+p+'_Earnings'];
+          const cellColor = colorMode === 'period' ? getColor(earnings, row.vehicle_basis, row.VanType) : 'white';
+
+          // Worked cell - centered and colored same as earnings
+          html += `<td class="worked-cell" style="background:${cellColor}">${row[prefix+p+'_Days'] || 0}</td>`;
+          // Earnings cell - colored
+          html += `<td style="background:${cellColor}">${formatCurrency(earnings)}</td>`;
+        });
+        html += '</tr>';
+      });
+
+      html += '</tbody></table>';
+      document.getElementById('tableContainer').innerHTML = html;
+    }
+
+    function updateStats() {
+      const filtered = getFiltered();
+      const totalDrivers = filtered.length;
+      const totalEarnings = filtered.reduce((sum, d) => sum + (parseFloat(d.YTD_Earnings) || 0), 0);
+      const avgEarnings = totalDrivers > 0 ? totalEarnings / totalDrivers : 0;
+
+      document.getElementById('statDrivers').textContent = totalDrivers.toLocaleString();
+      document.getElementById('statEarnings').textContent = formatCurrency(totalEarnings);
+      document.getElementById('statAvg').textContent = formatCurrency(avgEarnings);
+    }
+
+    function formatCurrency(val) {
+      const num = parseFloat(val) || 0;
+      return '£' + num.toLocaleString('en-GB', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    function getColor(earnings, vehicle, vanType, view) {
+      const e = parseFloat(earnings) || 0;
+      const isOwn = vehicle === 'Own Vehicle';
+      const isLease = vehicle === 'Lease Hire';
+      const isLite = vanType === 'Lite';
+      const is35t = vanType === '3.5t';
+      const prefix = isOwn ? 'own' : 'lease';
+
+      // Check if custom thresholds are set
+      let hasCustomThresholds = false;
+      for (let i = 1; i <= 3; i++) {
+        const minInput = document.getElementById(prefix + 'Min' + i);
+        const maxInput = document.getElementById(prefix + 'Max' + i);
+        if (minInput.value || maxInput.value) {
+          hasCustomThresholds = true;
+          break;
+        }
+      }
+
+      // If custom thresholds are set, use them
+      if (hasCustomThresholds) {
+        for (let i = 1; i <= 3; i++) {
+          const minInput = document.getElementById(prefix + 'Min' + i);
+          const maxInput = document.getElementById(prefix + 'Max' + i);
+          const colorInput = document.getElementById(prefix + 'Color' + i);
+
+          const min = minInput.value ? parseFloat(minInput.value) : null;
+          const max = maxInput.value ? parseFloat(maxInput.value) : null;
+
+          if (min === null || max === null) continue;
+
+          if (e >= min && e <= max) {
+            return colorInput.value;
+          }
+        }
+        return 'white';
+      }
+
+      const green = '#d4edda';
+      const amber = '#fff3cd';
+      const red = '#f8d7da';
+
+      const isBP = (view || currentView) === 'bp';
+
+      if (isBP) {
+        // BP thresholds: Lite or Own Vehicle >=2500 green, >=1750 amber
+        //                3.5t Lease >=3500 green, >=3150 amber
+        if (isLite || isOwn) {
+          if (e >= 2500) return green;
+          if (e >= 1750) return amber;
+          return red;
+        }
+        if (is35t && isLease) {
+          if (e >= 3500) return green;
+          if (e >= 3150) return amber;
+          return red;
+        }
+        return 'white';
+      }
+
+      // Weekly thresholds
+      // Lite vans (any ownership): >=750 green, 500-749 amber, <500 red
+      if (isLite) {
+        if (e >= 750) return green;
+        if (e >= 500) return amber;
+        return red;
+      }
+
+      // 3.5t + Lease: >=1000 green, 900-999 amber, <900 red
+      if (is35t && isLease) {
+        if (e >= 1000) return green;
+        if (e >= 900) return amber;
+        return red;
+      }
+
+      // 3.5t + Own: >=750 green, 500-749 amber, <500 red
+      if (is35t && isOwn) {
+        if (e >= 750) return green;
+        if (e >= 500) return amber;
+        return red;
+      }
+
+      // Fallback for unknown combinations
+      return 'white';
+    }
+
+    function sortTable(col) {
+      sortAsc = sortCol === col ? !sortAsc : true;
+      sortCol = col;
+      data.sort((a, b) => {
+        let aVal = a[col] || '';
+        let bVal = b[col] || '';
+        if (!isNaN(aVal) && aVal !== '') {
+          aVal = parseFloat(aVal);
+          bVal = parseFloat(bVal) || 0;
+        }
+        return sortAsc ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1);
+      });
+      renderTable();
+    }
+
+    function setColorMode(mode) {
+      colorMode = mode;
+
+      document.getElementById('colorModeYtd').classList.remove('active');
+      document.getElementById('colorModePeriod').classList.remove('active');
+
+      if (mode === 'ytd') {
+        document.getElementById('colorModeYtd').classList.add('active');
+      } else {
+        document.getElementById('colorModePeriod').classList.add('active');
+      }
+    }
+
+    function openColorModal() {
+      document.getElementById('colorModal').style.display = 'block';
+    }
+
+    function closeColorModal() {
+      document.getElementById('colorModal').style.display = 'none';
+    }
+
+    function applyColors() {
+      renderTable();
+      closeColorModal();
+    }
+
+    // APPLY TO BOTH: Copy Own Vehicle settings to Lease Hire
+    function applyToBoth() {
+      for (let i = 1; i <= 3; i++) {
+        // Copy color
+        document.getElementById('leaseColor' + i).value = document.getElementById('ownColor' + i).value;
+        // Copy min
+        document.getElementById('leaseMin' + i).value = document.getElementById('ownMin' + i).value;
+        // Copy max
+        document.getElementById('leaseMax' + i).value = document.getElementById('ownMax' + i).value;
+      }
+    }
+
+    // RESET FUNCTION: Resets all color formatting to null/empty
+    function resetColorFormatting() {
+      // Own Vehicle - Reset to empty
+      for (let i = 1; i <= 3; i++) {
+        document.getElementById('ownMin' + i).value = '';
+        document.getElementById('ownMax' + i).value = '';
+      }
+
+      // Lease Hire - Reset to empty
+      for (let i = 1; i <= 3; i++) {
+        document.getElementById('leaseMin' + i).value = '';
+        document.getElementById('leaseMax' + i).value = '';
+      }
+
+      // Reset colors to defaults
+      document.getElementById('ownColor1').value = '#d4edda';
+      document.getElementById('ownColor2').value = '#fff3cd';
+      document.getElementById('ownColor3').value = '#f8d7da';
+      document.getElementById('leaseColor1').value = '#d4edda';
+      document.getElementById('leaseColor2').value = '#fff3cd';
+      document.getElementById('leaseColor3').value = '#f8d7da';
+
+      // Apply the reset
+      renderTable();
+    }
+
+    // Export table data to CSV
+    function exportToCSV() {
+      const filtered = getFiltered();
+
+      // Get selected periods
+      const selectedPeriodOptions = selectStates.periodSelect.selected;
+      let periods = [];
+      if (selectedPeriodOptions.length > 0) {
+        periods = selectedPeriodOptions.map(opt => {
+          if (currentView === 'bp') {
+            return parseInt(opt.replace('BP', ''));
+          } else {
+            return parseInt(opt.replace('Week ', ''));
+          }
+        }).sort((a, b) => a - b);
+      }
+
+      // Build CSV headers
+      let headers = ['FD Number', 'Driver Name', 'Van Type', 'Depot', 'Vehicle Type', 'Unique Routes (30 days)', 'Avg Days/Week', 'Avg Daily Earnings'];
+      periods.forEach(p => {
+        const label = currentView === 'bp' ? `BP${p}` : `Week ${p}`;
+        headers.push(`${label} Worked`);
+        headers.push(`${label} Earnings`);
+      });
+
+      // Build CSV rows
+      let csvContent = headers.join(',') + '\n';
+
+      filtered.forEach(row => {
+        const driverName = ((row.First_name || '') + ' ' + (row.Surname || '')).trim();
+        let rowData = [
+          row.fd_number || '',
+          `"${driverName}"`,
+          row.VanType || '',
+          `"${row.DeliveryDepotName || ''}"`,
+          row.vehicle_basis || '',
+          row.unique_routes != null ? row.unique_routes : '',
+          (row.Avg_Days_Week || 0).toFixed(2),
+          (row.Avg_Daily_Earnings || 0).toFixed(2)
+        ];
+
+        periods.forEach(p => {
+          const prefix = currentView === 'bp' ? 'BP' : 'Week_';
+          rowData.push(row[prefix + p + '_Days'] || 0);
+          rowData.push(parseFloat(row[prefix + p + '_Earnings']) || 0);
+        });
+
+        csvContent += rowData.join(',') + '\n';
+      });
+
+      // Create and trigger download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `driver_earnings_${currentView}_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // ===== DRIVER PROFILE =====
+    let profileRoutesData = [];
+    let profileDriverRow = null;
+    let profileChart = null;
+    let activeRouteTab = 'weekday';
+
+    function openDriverProfile(fdNumber) {
+      profileDriverRow = data.find(d => String(d.fd_number) === String(fdNumber));
+      if (!profileDriverRow) return;
+
+      document.getElementById('driverProfileOverlay').style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+
+      if (profileChart) { profileChart.destroy(); profileChart = null; }
+
+      document.getElementById('profileTitle').textContent =
+        profileDriverRow.fd_number + ' — ' + (profileDriverRow.First_name || '') + ' ' + (profileDriverRow.Surname || '');
+
+      renderProfileStats();
+
+      document.getElementById('profileLoading').style.display = 'block';
+      document.getElementById('profileContent').style.display = 'none';
+
+      google.script.run
+        .withSuccessHandler(handleRoutesSuccess)
+        .withFailureHandler(handleRoutesError)
+        .getDriverRoutesData(String(fdNumber));
+    }
+
+    function handleRoutesSuccess(result) {
+      profileRoutesData = Array.isArray(result) ? result : [];
+
+      // Populate driver code dropdown
+      const codes = [...new Set(profileRoutesData.map(r => r.driver_code).filter(Boolean))].sort();
+      const sel = document.getElementById('profileDriverSelect');
+      sel.innerHTML = '<option value="">All Drivers</option>';
+      codes.forEach(code => {
+        const opt = document.createElement('option');
+        opt.value = opt.textContent = code;
+        sel.appendChild(opt);
+      });
+
+      // Default date range: 2026-01-01 → today
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('profileDateFrom').value = '2026-01-01';
+      document.getElementById('profileDateTo').value = today;
+
+      document.getElementById('profileLoading').style.display = 'none';
+      document.getElementById('profileContent').style.display = 'flex';
+      activeRouteTab = 'weekday';
+      refreshProfileView();
+    }
+
+    function handleRoutesError(err) {
+      document.getElementById('profileLoading').innerHTML =
+        '<div style="color:var(--dpd-red);font-size:14px">⚠️ Error loading route data: ' + (err || 'Unknown error') + '</div>';
+    }
+
+    function closeDriverProfile() {
+      document.getElementById('driverProfileOverlay').style.display = 'none';
+      document.body.style.overflow = '';
+      if (profileChart) { profileChart.destroy(); profileChart = null; }
+    }
+
+    function handleProfileOverlayClick(e) {
+      if (e.target === document.getElementById('driverProfileOverlay')) closeDriverProfile();
+    }
+
+    function renderProfileStats(filtered) {
+      const row = profileDriverRow;
+      const ytdEarnings = parseFloat(row.YTD_Earnings) || 0;
+      const totalCharges = parseFloat(row.total_charges) || 0;
+      const ytdDays = parseFloat(row.YTD_Days_Worked) || 0;
+      const avgDaily = row.Avg_Daily_Earnings || 0;
+      const avgDaysWeek = row.Avg_Days_Week || 0;
+      const avgWeekly = avgDaily * avgDaysWeek;
+      const uniqueRoutes = row.unique_routes != null ? row.unique_routes : '—';
+
+      // Derive start date: earliest business_start_date from routes data, fallback to main row
+      let startDate = '—';
+      const allDates = (profileRoutesData || [])
+        .map(r => r.business_start_date)
+        .filter(Boolean);
+      if (allDates.length > 0) {
+        startDate = allDates.reduce((earliest, d) => d < earliest ? d : earliest);
+      } else if (row.business_start_date) {
+        startDate = row.business_start_date;
+      }
+
+      let avgStopsVal = '—';
+      if (filtered && filtered.length > 0) {
+        const stopsRows = filtered.filter(r => parseFloat(r.number_of_stops) > 0);
+        if (stopsRows.length > 0) {
+          const total = stopsRows.reduce((sum, r) => sum + (parseFloat(r.number_of_stops) || 0), 0);
+          avgStopsVal = (total / stopsRows.length).toFixed(1);
+        }
+      }
+
+      const cards = [
+        pCard('FD Number', row.fd_number),
+        pCard('Start Date', startDate, false, 'profileStartDate'),
+        pCard('Depot', row.DeliveryDepotName || '—', true),
+        pCard('Area', row.area_number || '—'),
+        pCard('Vehicle', (row.VanType || '—') + ' · ' + (row.vehicle_basis || '—'), true),
+        pCard('Total Charges', formatCurrency(totalCharges), false, null, 'FD level'),
+        pCard('YTD Earnings', formatCurrency(ytdEarnings), false, null, 'FD level'),
+        pCard('Avg Daily Earnings', formatCurrency(avgDaily), false, null, 'FD level'),
+        pCard('Avg Weekly Earnings', formatCurrency(avgWeekly), false, null, 'FD level'),
+        pCard('Total Days Worked', ytdDays),
+        pCard('Avg Days/Week', avgDaysWeek.toFixed(2)),
+        pCard('Avg Stops', avgStopsVal),
+        pCard('Unique Routes (30 days)', uniqueRoutes)
+      ];
+      document.getElementById('profileStats').innerHTML = cards.join('');
+    }
+
+    function pCard(label, value, small, id, note) {
+      const idAttr = id ? ' id="' + id + '"' : '';
+      const sz = small ? 'font-size:13px;' : '';
+      const noteHtml = note ? '<div class="profile-stat-note">' + note + '</div>' : '';
+      return '<div class="profile-stat-card"><div class="profile-stat-label">' + label + '</div>' +
+             '<div class="profile-stat-value" style="' + sz + '"' + idAttr + '>' + value + '</div>' + noteHtml + '</div>';
+    }
+
+    function getProfileFiltered() {
+      const from = document.getElementById('profileDateFrom').value;
+      const to = document.getElementById('profileDateTo').value;
+      const code = document.getElementById('profileDriverSelect').value;
+      return profileRoutesData.filter(r => {
+        const dateOk = (!from || r.route_date >= from) && (!to || r.route_date <= to);
+        const codeOk = !code || r.driver_code === code;
+        return dateOk && codeOk;
+      });
+    }
+
+    function setLast30Days() {
+      const to = new Date();
+      to.setDate(to.getDate() - 1);
+      const from = new Date();
+      from.setDate(from.getDate() - 31);
+      document.getElementById('profileDateFrom').value = from.toISOString().split('T')[0];
+      document.getElementById('profileDateTo').value = to.toISOString().split('T')[0];
+      refreshProfileView();
+    }
+
+    function refreshProfileView() {
+      const filtered = getProfileFiltered();
+      const code = document.getElementById('profileDriverSelect').value;
+      document.getElementById('profileFdNote').style.display = code ? 'block' : 'none';
+      renderProfileStats(filtered);
+      renderStopsChart(filtered);
+      renderProfileCalendar();
+      renderDriverCodeTable(filtered);
+      renderRouteTable(filtered, activeRouteTab);
+      renderDayOfWeekTable(filtered);
+    }
+
+    function renderStopsChart(filtered) {
+      const sorted = [...filtered].sort((a, b) => (a.route_date || '').localeCompare(b.route_date || ''));
+      const labels = sorted.map(r => r.route_date);
+      const stops = sorted.map(r => parseFloat(r.number_of_stops) || 0);
+      const bpArr = sorted.map(r => parseFloat(r.blueprint_stops) || 0);
+      const fallbackBp = bpArr.find(v => v > 0) || 0;
+
+      const wrap = document.getElementById('stopsChartWrap');
+      if (!wrap) return;
+
+      if (profileChart) { profileChart.destroy(); profileChart = null; }
+
+      if (labels.length === 0) {
+        wrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;font-size:13px">No route data for selected filters</div>';
+        return;
+      }
+
+      // Restore canvas if it was replaced
+      if (!document.getElementById('stopsChart')) {
+        wrap.innerHTML = '<canvas id="stopsChart"></canvas>';
+      }
+      const ctx = document.getElementById('stopsChart');
+
+      profileChart = new Chart(ctx, {
+        data: {
+          labels,
+          datasets: [
+            {
+              type: 'bar',
+              label: 'Stops',
+              data: stops,
+              backgroundColor: stops.map((s, i) => {
+                const bp = bpArr[i] || fallbackBp;
+                return s >= bp ? 'rgba(40,167,69,0.65)' : 'rgba(255,193,7,0.8)';
+              }),
+              borderColor: stops.map((s, i) => {
+                const bp = bpArr[i] || fallbackBp;
+                return s >= bp ? '#28a745' : '#e6a800';
+              }),
+              borderWidth: 1,
+              borderRadius: 3,
+              order: 2
+            },
+            {
+              type: 'line',
+              label: 'Target (' + fallbackBp + ')',
+              data: sorted.map(r => parseFloat(r.blueprint_stops) || fallbackBp),
+              borderColor: '#dc0032',
+              borderWidth: 2,
+              borderDash: [6, 4],
+              pointRadius: 0,
+              fill: false,
+              tension: 0,
+              order: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: true, position: 'top', labels: { font: { size: 11 }, padding: 8, boxWidth: 12 } },
+            tooltip: {
+              callbacks: {
+                afterBody: (items) => {
+                  const r = sorted[items[0].dataIndex];
+                  return ['Route: ' + (r.route_no || '—'), 'Driver: ' + (r.driver_code || '—'), 'Blueprint: ' + (r.blueprint_stops || '—')];
+                }
+              }
+            }
+          },
+          scales: {
+            x: { ticks: { maxRotation: 45, font: { size: 9 }, maxTicksLimit: 35 }, grid: { display: false } },
+            y: { beginAtZero: false, ticks: { font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.05)' } }
+          }
+        }
+      });
+    }
+
+    function renderProfileCalendar() {
+      // Calendar respects driver code filter but NOT date range (shows full 2026)
+      const code = document.getElementById('profileDriverSelect').value;
+      const routesForCal = code ? profileRoutesData.filter(r => r.driver_code === code) : profileRoutesData;
+
+      const routeMap = {};
+      routesForCal.forEach(r => {
+        if (!r.route_date) return;
+        if (!routeMap[r.route_date]) routeMap[r.route_date] = { stops: 0, blueprint: 0 };
+        routeMap[r.route_date].stops = Math.max(routeMap[r.route_date].stops, parseFloat(r.number_of_stops) || 0);
+        if (!routeMap[r.route_date].blueprint) routeMap[r.route_date].blueprint = parseFloat(r.blueprint_stops) || 0;
+      });
+
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      const dayHdrs = ['M','T','W','T','F','S','S'];
+
+      let html = '<div class="calendar-grid">';
+      for (let m = 0; m < 12; m++) {
+        const daysInMonth = new Date(2026, m + 1, 0).getDate();
+        let startDow = new Date(2026, m, 1).getDay();
+        startDow = startDow === 0 ? 6 : startDow - 1; // Mon=0
+
+        html += '<div class="cal-month"><div class="cal-month-title">' + monthNames[m] + '</div><div class="cal-days">';
+        dayHdrs.forEach(d => { html += '<div class="cal-header-cell">' + d + '</div>'; });
+        for (let i = 0; i < startDow; i++) html += '<div class="cal-cell empty"></div>';
+
+        for (let day = 1; day <= daysInMonth; day++) {
+          const ds = '2026-' + String(m + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+          const cellDate = new Date(2026, m, day);
+          let cls, title;
+          if (cellDate > today) {
+            cls = 'future'; title = ds;
+          } else if (routeMap[ds]) {
+            const info = routeMap[ds];
+            const bp = info.blueprint;
+            cls = (bp > 0 && info.stops < bp) ? 'worked-amber' : 'worked-green';
+            title = ds + ': ' + info.stops + ' stops' + (bp ? ' (target: ' + bp + ')' : '');
+          } else {
+            cls = 'not-worked'; title = ds + ': Not worked';
+          }
+          html += '<div class="cal-cell ' + cls + '" title="' + title + '">' + day + '</div>';
+        }
+        html += '</div></div>';
+      }
+      html += '</div>';
+      html += '<div class="cal-legend">' +
+        '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#d4edda;border:1px solid #b7dfc4"></div>On/above target</div>' +
+        '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#fff3cd;border:1px solid #ffe69c"></div>Below target</div>' +
+        '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#e0e0e0;border:1px solid #ccc"></div>Not worked</div>' +
+        '</div>';
+
+      document.getElementById('profileCalendar').innerHTML = html;
+    }
+
+    function renderDriverCodeTable(filtered) {
+      const counts = {};
+      const stopsSum = {};
+      const stopsCount = {};
+      filtered.forEach(r => {
+        if (r.driver_code) {
+          counts[r.driver_code] = (counts[r.driver_code] || 0) + 1;
+          const s = parseFloat(r.number_of_stops);
+          if (s > 0) {
+            stopsSum[r.driver_code] = (stopsSum[r.driver_code] || 0) + s;
+            stopsCount[r.driver_code] = (stopsCount[r.driver_code] || 0) + 1;
+          }
+        }
+      });
+      const total = filtered.length;
+      const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+      let html = '<table class="profile-inner-table"><thead><tr><th>Driver Code</th><th>Routes</th><th>%</th><th>Avg Stops</th></tr></thead><tbody>';
+      if (rows.length === 0) {
+        html += '<tr><td colspan="4" style="text-align:center;color:#999;padding:12px 0">No data</td></tr>';
+      } else {
+        rows.forEach(([code, count]) => {
+          const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+          const avg = stopsCount[code] > 0 ? (stopsSum[code] / stopsCount[code]).toFixed(1) : '—';
+          html += '<tr><td>' + code + '</td><td>' + count + '</td><td>' + pct + '%</td><td>' + avg + '</td></tr>';
+        });
+      }
+      html += '</tbody></table>';
+      document.getElementById('driverCodeTableBody').innerHTML = html;
+    }
+
+    function renderRouteTable(filtered, tab) {
+      activeRouteTab = tab;
+      document.getElementById('routeTabWeekday').classList.toggle('active', tab === 'weekday');
+      document.getElementById('routeTabWeekend').classList.toggle('active', tab === 'weekend');
+
+      const wknd = new Set(['Saturday', 'Sunday']);
+      const subset = filtered.filter(r => tab === 'weekend' ? wknd.has(r.day_of_week) : !wknd.has(r.day_of_week));
+
+      const counts = {};
+      const stopsSum = {};
+      const stopsCount = {};
+      subset.forEach(r => {
+        if (r.route_no !== null && r.route_no !== undefined) {
+          const k = String(r.route_no);
+          counts[k] = (counts[k] || 0) + 1;
+          const s = parseFloat(r.number_of_stops);
+          if (s > 0) {
+            stopsSum[k] = (stopsSum[k] || 0) + s;
+            stopsCount[k] = (stopsCount[k] || 0) + 1;
+          }
+        }
+      });
+      const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+      let html = '<table class="profile-inner-table"><thead><tr><th>Route No.</th><th>Count</th><th>Avg Stops</th></tr></thead><tbody>';
+      if (rows.length === 0) {
+        html += '<tr><td colspan="3" style="text-align:center;color:#999;padding:12px 0">No data</td></tr>';
+      } else {
+        rows.forEach(([route, count]) => {
+          const avg = stopsCount[route] > 0 ? (stopsSum[route] / stopsCount[route]).toFixed(1) : '—';
+          html += '<tr><td>' + route + '</td><td>' + count + '</td><td>' + avg + '</td></tr>';
+        });
+      }
+      html += '</tbody></table>';
+      document.getElementById('routeTableBody').innerHTML = html;
+    }
+
+    function renderDayOfWeekTable(filtered) {
+      const order = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+      const counts = {};
+      const stopsSum = {};
+      const stopsCount = {};
+      filtered.forEach(r => {
+        if (r.day_of_week) {
+          counts[r.day_of_week] = (counts[r.day_of_week] || 0) + 1;
+          const s = parseFloat(r.number_of_stops);
+          if (s > 0) {
+            stopsSum[r.day_of_week] = (stopsSum[r.day_of_week] || 0) + s;
+            stopsCount[r.day_of_week] = (stopsCount[r.day_of_week] || 0) + 1;
+          }
+        }
+      });
+
+      let html = '<table class="profile-inner-table"><thead><tr><th>Day</th><th>Count</th><th>Avg Stops</th></tr></thead><tbody>';
+      if (!order.some(d => counts[d])) {
+        html += '<tr><td colspan="3" style="text-align:center;color:#999;padding:12px 0">No data</td></tr>';
+      } else {
+        order.forEach(day => {
+          if (counts[day]) {
+            const avg = stopsCount[day] > 0 ? (stopsSum[day] / stopsCount[day]).toFixed(1) : '—';
+            html += '<tr><td>' + day + '</td><td>' + counts[day] + '</td><td>' + avg + '</td></tr>';
+          }
+        });
+      }
+      html += '</tbody></table>';
+      document.getElementById('dayOfWeekTableBody').innerHTML = html;
+    }
+
+    // ===== PAGE SWITCHER =====
+    function switchPage() {
+      if (currentPage === 'ns') {
+        currentPage = 'earnings';
+        document.getElementById('nsPage').style.display = 'none';
+        document.getElementById('earningsPage').style.display = 'block';
+        document.getElementById('pageTitle').textContent = 'DPD Driver Earnings';
+        document.getElementById('pageNavBtn').textContent = '← Go to New Starters';
+        if (earningsDataLoaded) {
+          document.getElementById('earningsLoading').style.display = 'none';
+          document.getElementById('tableContainer').classList.remove('hidden');
+          document.getElementById('statsBar').classList.remove('hidden');
+        }
+      } else {
+        currentPage = 'ns';
+        document.getElementById('earningsPage').style.display = 'none';
+        document.getElementById('nsPage').style.display = 'block';
+        document.getElementById('pageTitle').textContent = 'New Starters';
+        document.getElementById('pageNavBtn').textContent = 'Go to Driver Earnings →';
+      }
+    }
+
+    // ===== NS DATA HANDLERS =====
+    function handleNsDataSuccess(result) {
+      console.log('NS data received:', result);
+
+      if (!result) {
+        handleNsDataError('No data returned (null result)');
+        return;
+      }
+
+      if (Array.isArray(result)) {
+        nsData = result;
+      } else if (result.success === false) {
+        handleNsDataError(result.error || 'GS reported failure with no error message');
+        return;
+      } else if (result.success === true && result.rows && result.schema) {
+        const schema = result.schema;
+        nsData = result.rows.map(row => {
+          let obj = {};
+          schema.forEach((field, i) => { obj[field.name] = row.f[i].v; });
+          return obj;
+        });
+      } else if (result.rows && Array.isArray(result.rows)) {
+        nsData = result.rows;
+      } else {
+        handleNsDataError('Unexpected data format — check console for details. Keys: ' + Object.keys(result).join(', '));
+        return;
+      }
+
+      nsData.forEach(row => { row._blueprintAvg = computeNsBlueprint(row); });
+      nsDataLoaded = true;
+      document.getElementById('nsLoading').style.display = 'none';
+      document.getElementById('nsControls').classList.remove('hidden');
+      populateNsFilters();
+      renderNsView();
+      updateNsStats();
+    }
+
+    function handleNsDataError(error) {
+      document.getElementById('nsLoading').innerHTML = `
+        <div style="text-align:center">
+          <div style="font-size:48px;color:var(--dpd-red);margin-bottom:20px">⚠️</div>
+          <div style="font-size:18px;font-weight:600;margin-bottom:10px">Error Loading New Starters Data</div>
+          <div style="font-size:13px;color:var(--text-secondary)">${error || 'Please refresh and try again.'}</div>
+        </div>`;
+    }
+
+    // ===== NS BLUEPRINT =====
+    function computeNsBlueprint(row) {
+      const dayKeys = ['mon','tue','wed','thu','fri','sat','sun'];
+      const contracted = dayKeys.filter(d => String(row['contracted_' + d]).toLowerCase() === 'true');
+      if (contracted.length > 0) {
+        const stops = contracted.map(d => parseFloat(row['number_of_stops_' + d])).filter(v => !isNaN(v) && v > 0);
+        if (stops.length > 0) return stops.reduce((s,v)=>s+v,0) / stops.length;
+      }
+      const allStops = dayKeys.map(d => parseFloat(row['number_of_stops_' + d])).filter(v => !isNaN(v) && v > 0);
+      return allStops.length > 0 ? allStops.reduce((s,v)=>s+v,0) / allStops.length : 0;
+    }
+
+    // ===== NS WEEK PCT =====
+    const NS_WEEK_TARGETS = [40, 60, 80, 100, 100, 100, 100, 100, 100, 100];
+
+    function computeDriverWeekPct(row, week, metric) {
+      const bp = row._blueprintAvg;
+      if (!bp || bp <= 0) return null;
+      const daysWorked = parseInt(row['week_' + week + '_days_worked']) || 0;
+      if (daysWorked === 0) return null;
+      const val = metric === 'max'
+        ? (parseInt(row['week_' + week + '_max_stops']) || 0)
+        : (parseFloat(row['week_' + week + '_avg_stops']) || 0);
+      if (val <= 0) return null;
+      return (val / bp) * 100;
+    }
+
+    function getNsColor(pct, week) {
+      if (pct === null || pct === undefined) return null;
+      const target = NS_WEEK_TARGETS[(week - 1)] || 100;
+      if (pct >= target) return 'green';
+      if (pct >= target - 15) return 'amber';
+      return 'red';
+    }
+
+    function formatPct(pct) {
+      if (pct === null || pct === undefined) return '—';
+      return Math.round(pct) + '%';
+    }
+
+    // ===== NS FILTERS =====
+    function populateNsFilters() {
+      const regions = [...new Set(nsData.map(d => d.depot_region))].filter(Boolean).sort();
+      const depots = [...new Set(nsData.map(d => d.depot_name))].filter(Boolean).sort();
+      // Start weeks: sort most recent first (strings like "2024-W01" sort naturally; reverse for most-recent-first)
+      const startWeeks = [...new Set(nsData.map(d => d.start_week))].filter(Boolean).sort().reverse();
+      populateCustomSelect('nsRegionSelect', regions);
+      populateCustomSelect('nsDepotSelect', depots);
+      populateCustomSelect('nsStartWeekSelect', startWeeks);
+      document.getElementById('nsFdSearch').addEventListener('input', () => { renderNsView(); updateNsStats(); });
+    }
+
+    function getNsFiltered() {
+      const regions = selectStates.nsRegionSelect.selected;
+      const depots = selectStates.nsDepotSelect.selected;
+      const startWeeks = selectStates.nsStartWeekSelect.selected;
+      const allRegions = regions.length === selectStates.nsRegionSelect.allOptions.length;
+      const allDepots = depots.length === selectStates.nsDepotSelect.allOptions.length;
+      const allStartWeeks = startWeeks.length === selectStates.nsStartWeekSelect.allOptions.length;
+      const fdSearch = (document.getElementById('nsFdSearch').value || '').trim();
+      const fdList = fdSearch ? fdSearch.split(',').map(s=>s.trim()).filter(Boolean) : [];
+      return nsData.filter(d => {
+        const ok1 = regions.length === 0 || allRegions || regions.includes(d.depot_region);
+        const ok2 = depots.length === 0 || allDepots || depots.includes(d.depot_name);
+        const ok4 = fdList.length === 0 || fdList.includes(String(d.fd_number));
+        const ok5 = startWeeks.length === 0 || allStartWeeks || startWeeks.includes(d.start_week);
+        return ok1 && ok2 && ok4 && ok5;
+      });
+    }
+
+    // ===== NS VIEW SWITCHER =====
+    function setNsView(view) {
+      nsViewMode = view;
+      document.getElementById('nsBtnSummary').classList.toggle('active', view === 'summary');
+      document.getElementById('nsBtnDrivers').classList.toggle('active', view === 'drivers');
+      document.getElementById('nsDriverFilters').classList.toggle('hidden', view === 'summary');
+      renderNsView();
+    }
+
+    function setNsMetric(metric) {
+      nsMetricMode = metric;
+      document.getElementById('nsBtnAvg').classList.toggle('active', metric === 'avg');
+      document.getElementById('nsBtnMax').classList.toggle('active', metric === 'max');
+      renderNsView();
+    }
+
+    function renderNsView() {
+      if (!nsDataLoaded) return;
+      if (nsViewMode === 'summary') {
+        document.getElementById('nsSummaryView').style.display = 'block';
+        document.getElementById('nsDriverView').style.display = 'none';
+        renderNsSummary();
+      } else {
+        document.getElementById('nsSummaryView').style.display = 'none';
+        document.getElementById('nsDriverView').style.display = 'block';
+        renderNsDriverTable();
+      }
+      updateNsStats();
+    }
+
+    function updateNsStats() {
+      if (!nsDataLoaded) return;
+      const filtered = getNsFiltered();
+      document.getElementById('nsStatDrivers').textContent = filtered.length.toLocaleString();
+    }
+
+    // ===== NS SUMMARY =====
+    function renderNsSummary() {
+      const filtered = getNsFiltered();
+      const metric = nsMetricMode;
+
+      // Build region map
+      const regionMap = {};
+      filtered.forEach(d => {
+        const r = d.depot_region || 'Unknown';
+        if (!regionMap[r]) regionMap[r] = [];
+        regionMap[r].push(d);
+      });
+
+      // Sort regions
+      let regionEntries = Object.entries(regionMap).map(([region, drivers]) => ({
+        region, drivers, pcts: computeGroupPcts(drivers, metric)
+      }));
+      if (nsRegionSortWeek !== null) {
+        regionEntries.sort((a, b) => {
+          const av = a.pcts[nsRegionSortWeek - 1] ?? -1;
+          const bv = b.pcts[nsRegionSortWeek - 1] ?? -1;
+          return nsRegionSortAsc ? av - bv : bv - av;
+        });
+      } else {
+        regionEntries.sort((a, b) => a.region.localeCompare(b.region));
+      }
+
+      // Build depot list in region order
+      let depotRows = [];
+      regionEntries.forEach(({ region, drivers }) => {
+        const depotMap = {};
+        drivers.forEach(d => {
+          const dep = d.depot_name || 'Unknown';
+          if (!depotMap[dep]) depotMap[dep] = [];
+          depotMap[dep].push(d);
+        });
+        Object.entries(depotMap).forEach(([depot, depDrivers]) => {
+          depotRows.push({ depot, region, drivers: depDrivers, pcts: computeGroupPcts(depDrivers, metric) });
+        });
+      });
+      if (nsDepotSortWeek !== null) {
+        depotRows.sort((a, b) => {
+          const av = a.pcts[nsDepotSortWeek - 1] ?? -1;
+          const bv = b.pcts[nsDepotSortWeek - 1] ?? -1;
+          return nsDepotSortAsc ? av - bv : bv - av;
+        });
+      }
+
+      function weekHeaders(sortWeek, sortAsc, clickFn) {
+        let h = '';
+        for (let w = 1; w <= 10; w++) {
+          const isSorted = sortWeek === w;
+          const arrow = isSorted ? (sortAsc ? ' ▲' : ' ▼') : '';
+          h += `<th onclick="${clickFn}(${w})" style="cursor:pointer;user-select:none">Week ${w}${arrow}<br><small style="font-weight:400;opacity:0.8">Target: ${NS_WEEK_TARGETS[w-1]}%</small></th>`;
+        }
+        return h;
+      }
+
+      // TABLE 1: Network + Regions
+      const netStats = computeGroupPcts(filtered, metric);
+      let html1 = '<table class="ns-summary-table"><thead><tr>';
+      html1 += '<th style="text-align:left;min-width:220px">Region</th><th>Drivers</th>';
+      html1 += weekHeaders(nsRegionSortWeek, nsRegionSortAsc, 'sortNsRegions');
+      html1 += '</tr></thead><tbody>';
+      html1 += buildSummaryRow('🌐 Network', filtered.length, netStats, 'ns-row-network');
+      regionEntries.forEach(({ region, drivers, pcts }) => {
+        html1 += buildSummaryRow(region, drivers.length, pcts, 'ns-row-region');
+      });
+      html1 += '</tbody></table>';
+
+      // TABLE 2: Depots
+      let html2 = '<table class="ns-summary-table" style="margin-top:24px"><thead><tr>';
+      html2 += '<th style="text-align:left;min-width:220px">Depot</th><th style="min-width:100px">Region</th><th>Drivers</th>';
+      for (let w = 1; w <= 10; w++) {
+        const isSorted = nsDepotSortWeek === w;
+        const arrow = isSorted ? (nsDepotSortAsc ? ' ▲' : ' ▼') : '';
+        html2 += `<th onclick="sortNsDepots(${w})" style="cursor:pointer;user-select:none">Week ${w}${arrow}<br><small style="font-weight:400;opacity:0.8">Target: ${NS_WEEK_TARGETS[w-1]}%</small></th>`;
+      }
+      html2 += '</tr></thead><tbody>';
+      depotRows.forEach(({ depot, region, drivers, pcts }) => {
+        let row = `<tr class="ns-row-depot">`;
+        row += `<td style="text-align:left">${depot}</td>`;
+        row += `<td style="text-align:left;color:var(--text-secondary);font-size:11px">${region}</td>`;
+        row += `<td>${drivers.length}</td>`;
+        pcts.forEach((pct, i) => {
+          const colorClass = getNsColor(pct, i + 1);
+          row += `<td class="ns-pct-cell${colorClass ? ' ' + colorClass : ' no-data'}">${formatPct(pct)}</td>`;
+        });
+        row += '</tr>';
+        html2 += row;
+      });
+      html2 += '</tbody></table>';
+
+      document.getElementById('nsSummaryView').innerHTML =
+        '<div class="ns-summary-container">' + html1 + html2 + '</div>';
+    }
+
+    function sortNsRegions(week) {
+      if (nsRegionSortWeek === week) {
+        nsRegionSortAsc = !nsRegionSortAsc;
+      } else {
+        nsRegionSortWeek = week;
+        nsRegionSortAsc = false; // default: best first
+      }
+      renderNsSummary();
+    }
+
+    function sortNsDepots(week) {
+      if (nsDepotSortWeek === week) {
+        nsDepotSortAsc = !nsDepotSortAsc;
+      } else {
+        nsDepotSortWeek = week;
+        nsDepotSortAsc = false;
+      }
+      renderNsSummary();
+    }
+
+    function computeGroupPcts(drivers, metric) {
+      const weeks = [];
+      for (let w = 1; w <= 10; w++) {
+        const pcts = drivers.map(d => computeDriverWeekPct(d, w, metric)).filter(p => p !== null);
+        weeks.push(pcts.length > 0 ? pcts.reduce((s,v)=>s+v,0)/pcts.length : null);
+      }
+      return weeks;
+    }
+
+    function buildSummaryRow(label, count, weekPcts, rowClass) {
+      let row = `<tr class="${rowClass}">`;
+      row += `<td style="text-align:left">${label}</td>`;
+      row += `<td>${count}</td>`;
+      weekPcts.forEach((pct, i) => {
+        const colorClass = getNsColor(pct, i + 1);
+        row += `<td class="ns-pct-cell${colorClass ? ' ' + colorClass : ' no-data'}">${formatPct(pct)}</td>`;
+      });
+      row += '</tr>';
+      return row;
+    }
+
+    // ===== NS DRIVER TABLE =====
+    function renderNsDriverTable() {
+      const filtered = getNsFiltered();
+      const metric = nsMetricMode;
+      let html = '<table style="width:100%"><thead><tr>';
+      html += `<th class="sticky-col col-0" onclick="sortNsTable('fd_number')">FD Number</th>`;
+      html += `<th class="sticky-col col-1" onclick="sortNsTable('_name')">Driver Name</th>`;
+      html += `<th class="sticky-col col-2" onclick="sortNsTable('depot_name')">Depot</th>`;
+      html += `<th class="sticky-col col-3" onclick="sortNsTable('depot_region')">Region</th>`;
+      html += `<th class="sticky-col col-4" onclick="sortNsTable('_blueprintAvg')">Blueprint Avg</th>`;
+      html += `<th class="sticky-col col-5" onclick="sortNsTable('state')">State</th>`;
+      html += `<th class="sticky-col col-6" onclick="sortNsTable('earliest_date')">Start Date</th>`;
+      for (let w = 1; w <= 10; w++) {
+        const isSorted = nsSortCol === '_week' + w;
+        const arrow = isSorted ? (nsSortAsc ? ' ▲' : ' ▼') : '';
+        html += `<th style="text-align:center;cursor:pointer;user-select:none;min-width:80px" onclick="sortNsTable('_week${w}')">Week ${w}${arrow}<br><small style="font-weight:400;font-size:10px;opacity:0.85">Target: ${NS_WEEK_TARGETS[w-1]}%</small></th>`;
+      }
+      html += '</tr></thead><tbody>';
+      const sorted = [...filtered];
+      if (nsSortCol) {
+        sorted.sort((a, b) => {
+          let aVal, bVal;
+          if (nsSortCol === '_name') {
+            aVal = ((a.First_Name||'')+' '+(a.Surname||'')).trim();
+            bVal = ((b.First_Name||'')+' '+(b.Surname||'')).trim();
+          } else if (nsSortCol.startsWith('_week')) {
+            const w = parseInt(nsSortCol.replace('_week',''));
+            aVal = computeDriverWeekPct(a, w, metric) ?? -1;
+            bVal = computeDriverWeekPct(b, w, metric) ?? -1;
+          } else {
+            aVal = a[nsSortCol] || '';
+            bVal = b[nsSortCol] || '';
+          }
+          if (typeof aVal === 'string' && !isNaN(aVal) && aVal !== '') { aVal = parseFloat(aVal); bVal = parseFloat(bVal) || 0; }
+          return nsSortAsc ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1);
+        });
+      }
+      sorted.forEach(row => {
+        const name = ((row.First_Name||'')+' '+(row.Surname||'')).trim();
+        html += '<tr>';
+        html += `<td class="sticky-col col-0"><span class="fd-link" onclick="openNsDriverProfile('${row.fd_number}')">${row.fd_number||''}</span></td>`;
+        html += `<td class="sticky-col col-1"><span class="fd-link" onclick="openNsDriverProfile('${row.fd_number}')">${name}</span></td>`;
+        html += `<td class="sticky-col col-2">${row.depot_name||''}</td>`;
+        html += `<td class="sticky-col col-3">${row.depot_region||''}</td>`;
+        html += `<td class="sticky-col col-4" style="text-align:center">${row._blueprintAvg > 0 ? row._blueprintAvg.toFixed(1) : '—'}</td>`;
+        html += `<td class="sticky-col col-5">${row.state||''}</td>`;
+        html += `<td class="sticky-col col-6">${row.earliest_date||''}</td>`;
+        for (let w = 1; w <= 10; w++) {
+          const pct = computeDriverWeekPct(row, w, metric);
+          const colorClass = getNsColor(pct, w);
+          const bg = colorClass === 'green' ? '#d4edda' : colorClass === 'amber' ? '#fff3cd' : colorClass === 'red' ? '#f8d7da' : 'white';
+          html += `<td style="text-align:center;background:${bg};font-weight:${colorClass ? '700' : '400'};color:${colorClass === 'green' ? '#155724' : colorClass === 'amber' ? '#856404' : colorClass === 'red' ? '#721c24' : '#aaa'}">${formatPct(pct)}</td>`;
+        }
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      document.getElementById('nsDriverView').innerHTML = '<div style="padding:0 0 20px 0"><div class="table-container" style="max-height:700px;border:20px solid white;border-top-width:10px">' + html + '</div></div>';
+    }
+
+    function sortNsTable(col) {
+      nsSortAsc = nsSortCol === col ? !nsSortAsc : true;
+      nsSortCol = col;
+      renderNsDriverTable();
+    }
+
+    // ===== NS DRIVER PROFILE =====
+    function openNsDriverProfile(fdNumber) {
+      nsProfileRow = nsData.find(d => String(d.fd_number) === String(fdNumber));
+      if (!nsProfileRow) return;
+      const name = ((nsProfileRow.First_Name||'')+' '+(nsProfileRow.Surname||'')).trim();
+      document.getElementById('nsProfileTitle').textContent = nsProfileRow.fd_number + ' — ' + name;
+      const bp = nsProfileRow._blueprintAvg;
+      const dayKeys = ['mon','tue','wed','thu','fri','sat','sun'];
+      const contractedDays = dayKeys.filter(d => String(nsProfileRow['contracted_'+d]).toLowerCase()==='true').map(d=>d.charAt(0).toUpperCase()+d.slice(1));
+      let totalDaysWorked = 0;
+      for (let w = 1; w <= 10; w++) totalDaysWorked += parseInt(nsProfileRow['week_'+w+'_days_worked']) || 0;
+      const statsHtml = [
+        pCard('FD Number', nsProfileRow.fd_number),
+        pCard('Depot', nsProfileRow.depot_name || '—', true),
+        pCard('Region', nsProfileRow.depot_region || '—'),
+        pCard('State', nsProfileRow.state || '—'),
+        pCard('Blueprint Avg Stops', bp > 0 ? bp.toFixed(1) : '—'),
+        pCard('Contracted Days', contractedDays.length > 0 ? contractedDays.join(', ') : '—', true),
+        pCard('Start Date', nsProfileRow.earliest_date || '—'),
+        pCard('Total Days Worked', totalDaysWorked),
+        pCard('Contract Type', nsProfileRow.Business_Proposal_Type || '—', true),
+        pCard('Matrix Category', nsProfileRow.Matrix_Category || '—'),
+      ].join('');
+      document.getElementById('nsProfileStats').innerHTML = statsHtml;
+      document.getElementById('nsDriverProfileOverlay').style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      nsProfileMetric = 'avg';
+      document.getElementById('nsProfileBtnAvg').classList.add('active');
+      document.getElementById('nsProfileBtnMax').classList.remove('active');
+      renderNs10WeekCalendar();
+      renderNsActualCalendar();
+      renderNsProgressChart();
+      renderNsWeekBreakdown();
+    }
+
+    function setNsProfileMetric(metric) {
+      nsProfileMetric = metric;
+      document.getElementById('nsProfileBtnAvg').classList.toggle('active', metric === 'avg');
+      document.getElementById('nsProfileBtnMax').classList.toggle('active', metric === 'max');
+      renderNsProgressChart();
+      renderNsWeekBreakdown();
+    }
+
+    function closeNsDriverProfile() {
+      document.getElementById('nsDriverProfileOverlay').style.display = 'none';
+      document.body.style.overflow = '';
+      if (nsProfileChart) { nsProfileChart.destroy(); nsProfileChart = null; }
+    }
+
+    function handleNsProfileOverlayClick(e) {
+      if (e.target === document.getElementById('nsDriverProfileOverlay')) closeNsDriverProfile();
+    }
+
+    function parseDaysWorked(daysWorkedStr) {
+      if (!daysWorkedStr) return new Set();
+      const cleaned = String(daysWorkedStr).replace(/[()[\]]/g, '').trim();
+      if (!cleaned) return new Set();
+      return new Set(cleaned.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n)));
+    }
+
+    function renderNs10WeekCalendar() {
+      const row = nsProfileRow;
+      const workedDays = parseDaysWorked(row.days_worked);
+      const dayKeys = ['mon','tue','wed','thu','fri','sat','sun'];
+      const dayLabels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+      const today = new Date(); today.setHours(0,0,0,0);
+      let startDate = null;
+      if (row.earliest_date) {
+        startDate = new Date(row.earliest_date);
+        const dow = startDate.getDay();
+        const diff = (dow === 0) ? -6 : 1 - dow;
+        startDate.setDate(startDate.getDate() + diff);
+      }
+      let html = '<table class="ns-week-grid"><thead><tr><th style="text-align:left;min-width:60px">Week</th>';
+      dayLabels.forEach(d => { html += `<th>${d}</th>`; });
+      html += '</tr></thead><tbody>';
+      for (let w = 1; w <= 10; w++) {
+        html += `<tr><td class="week-label-cell">W${w}</td>`;
+        for (let d = 1; d <= 7; d++) {
+          const dayNum = (w - 1) * 7 + d;
+          const dayKey = dayKeys[d - 1];
+          const isContracted = String(row['contracted_' + dayKey]).toLowerCase() === 'true';
+          const isWorked = workedDays.has(dayNum);
+          let isFuture = false;
+          if (startDate) {
+            const cellDate = new Date(startDate);
+            cellDate.setDate(startDate.getDate() + dayNum - 1);
+            isFuture = cellDate > today;
+          }
+          let cls, label;
+          if (isFuture) { cls = 'ns-day-future'; label = isContracted ? '·' : ''; }
+          else if (isContracted && isWorked) { cls = 'ns-day-contracted-worked'; label = '✓'; }
+          else if (!isContracted && isWorked) { cls = 'ns-day-extra-worked'; label = '✓'; }
+          else if (isContracted && !isWorked) { cls = 'ns-day-contracted-missed'; label = '✗'; }
+          else { cls = 'ns-day-not-contracted'; label = ''; }
+          html += `<td class="${cls}">${label}</td>`;
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      html += `<div class="ns-cal-legend">
+        <div class="ns-cal-legend-item"><div class="ns-cal-legend-dot" style="background:#b8e6c8;border:1px solid #8ecfaa"></div>Contracted &amp; Worked</div>
+        <div class="ns-cal-legend-item"><div class="ns-cal-legend-dot" style="background:#ffeaa0;border:1px solid #f5d060"></div>Extra Day Worked</div>
+        <div class="ns-cal-legend-item"><div class="ns-cal-legend-dot" style="background:#f5b7c0;border:1px solid #e88898"></div>Contracted – Missed</div>
+        <div class="ns-cal-legend-item"><div class="ns-cal-legend-dot" style="background:#dde1e7;border:1px solid #c0c6ce"></div>Not Contracted / Future</div>
+      </div>`;
+      document.getElementById('nsWeekCalendar').innerHTML = html;
+    }
+
+    function renderNsActualCalendar() {
+      const row = nsProfileRow;
+      const container = document.getElementById('nsActualCalendar');
+
+      if (!row.earliest_date) {
+        container.innerHTML = '<div style="color:#999;font-size:12px;padding:8px 0">No start date available</div>';
+        return;
+      }
+
+      const workedDays = parseDaysWorked(row.days_worked);
+      const dayKeys = ['mon','tue','wed','thu','fri','sat','sun'];
+      const dayLabels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+      const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+      // Start of Week 1 = Monday on or before earliest_date
+      const startOfW1 = new Date(row.earliest_date);
+      const dow = startOfW1.getDay();
+      startOfW1.setDate(startOfW1.getDate() + (dow === 0 ? -6 : 1 - dow));
+
+      const today = new Date(); today.setHours(0,0,0,0);
+
+      let html = '<table class="ns-week-grid"><thead><tr>';
+      html += '<th style="text-align:left;min-width:50px">Week</th>';
+      dayLabels.forEach(d => { html += `<th>${d}</th>`; });
+      html += '</tr></thead><tbody>';
+
+      let lastMonthKey = null;
+
+      for (let w = 1; w <= 10; w++) {
+        const weekStart = new Date(startOfW1);
+        weekStart.setDate(startOfW1.getDate() + (w - 1) * 7);
+        const monthKey = weekStart.getFullYear() + '-' + weekStart.getMonth();
+
+        if (monthKey !== lastMonthKey) {
+          html += `<tr><td colspan="8" style="background:linear-gradient(135deg,var(--dpd-red),var(--dpd-red-dark));color:white;font-size:10px;font-weight:700;padding:4px 8px;text-align:left;letter-spacing:0.5px">${monthNames[weekStart.getMonth()]} ${weekStart.getFullYear()}</td></tr>`;
+          lastMonthKey = monthKey;
+        }
+
+        html += `<tr><td class="week-label-cell">W${w}</td>`;
+
+        for (let d = 1; d <= 7; d++) {
+          const dayNum = (w - 1) * 7 + d;
+          const dayKey = dayKeys[d - 1];
+          const isContracted = String(row['contracted_' + dayKey]).toLowerCase() === 'true';
+          const isWorked = workedDays.has(dayNum);
+
+          const cellDate = new Date(startOfW1);
+          cellDate.setDate(startOfW1.getDate() + dayNum - 1);
+          const isFuture = cellDate > today;
+          const dateNum = cellDate.getDate();
+          const dateStr = cellDate.toISOString().split('T')[0];
+
+          let cls, title;
+          if (isFuture) {
+            cls = 'ns-day-future';
+            title = dateStr + (isContracted ? ' · Contracted (future)' : '');
+          } else if (isContracted && isWorked) {
+            cls = 'ns-day-contracted-worked';
+            title = dateStr + ': Contracted & worked ✓';
+          } else if (!isContracted && isWorked) {
+            cls = 'ns-day-extra-worked';
+            title = dateStr + ': Extra day worked';
+          } else if (isContracted && !isWorked) {
+            cls = 'ns-day-contracted-missed';
+            title = dateStr + ': Contracted – not worked ✗';
+          } else {
+            cls = 'ns-day-not-contracted';
+            title = dateStr + ': Not contracted';
+          }
+
+          html += `<td class="${cls}" title="${title}">${dateNum}</td>`;
+        }
+        html += '</tr>';
+      }
+
+      html += '</tbody></table>';
+      html += `<div class="ns-cal-legend" style="margin-top:8px">
+        <div class="ns-cal-legend-item"><div class="ns-cal-legend-dot" style="background:#b8e6c8;border:1px solid #8ecfaa"></div>Contracted &amp; Worked</div>
+        <div class="ns-cal-legend-item"><div class="ns-cal-legend-dot" style="background:#ffeaa0;border:1px solid #f5d060"></div>Extra Day Worked</div>
+        <div class="ns-cal-legend-item"><div class="ns-cal-legend-dot" style="background:#f5b7c0;border:1px solid #e88898"></div>Contracted – Missed</div>
+        <div class="ns-cal-legend-item"><div class="ns-cal-legend-dot" style="background:#dde1e7;border:1px solid #c0c6ce"></div>Not Contracted / Future</div>
+      </div>`;
+
+      container.innerHTML = html;
+    }
+
+    function renderNsProgressChart() {
+      const row = nsProfileRow;
+      const metric = nsProfileMetric;
+      const bp = row._blueprintAvg;
+      const labels = [], actuals = [], targets = [];
+      for (let w = 1; w <= 10; w++) {
+        const daysWorked = parseInt(row['week_' + w + '_days_worked']) || 0;
+        const val = metric === 'max'
+          ? (parseInt(row['week_' + w + '_max_stops']) || 0)
+          : (parseFloat(row['week_' + w + '_avg_stops']) || 0);
+        if (daysWorked > 0) { labels.push('W' + w); actuals.push(val); targets.push(bp); }
+      }
+      const wrap = document.getElementById('nsChartWrap');
+      if (!wrap) return;
+      if (nsProfileChart) { nsProfileChart.destroy(); nsProfileChart = null; }
+      if (labels.length === 0) {
+        wrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;font-size:13px">No stop data available</div>';
+        return;
+      }
+      if (!document.getElementById('nsProgressChart')) {
+        wrap.innerHTML = '<canvas id="nsProgressChart"></canvas>';
+      }
+      nsProfileChart = new Chart(document.getElementById('nsProgressChart'), {
+        data: {
+          labels,
+          datasets: [
+            {
+              type: 'bar',
+              label: metric === 'max' ? 'Max Stops' : 'Avg Stops',
+              data: actuals,
+              backgroundColor: actuals.map((v, i) => {
+                const wNum = parseInt(labels[i].replace('W',''));
+                const t = (NS_WEEK_TARGETS[wNum-1] || 100) / 100 * bp;
+                return v >= t ? 'rgba(40,167,69,0.7)' : v >= (t * 0.85) ? 'rgba(255,193,7,0.8)' : 'rgba(220,0,50,0.65)';
+              }),
+              borderWidth: 1, borderRadius: 4, order: 2
+            },
+            {
+              type: 'line',
+              label: 'Blueprint (' + (bp > 0 ? bp.toFixed(0) : '—') + ')',
+              data: labels.map(() => bp),
+              borderColor: '#333', borderWidth: 2, borderDash: [6, 4],
+              pointRadius: 0, fill: false, tension: 0, order: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: true, position: 'top', labels: { font: { size: 11 }, padding: 8, boxWidth: 12 } },
+            tooltip: {
+              callbacks: {
+                afterBody: (items) => {
+                  const wNum = parseInt(labels[items[0].dataIndex].replace('W',''));
+                  const tPct = NS_WEEK_TARGETS[wNum-1] || 100;
+                  const tStops = (tPct / 100 * bp).toFixed(0);
+                  return [`Target: ${tStops} stops (${tPct}% of blueprint)`];
+                }
+              }
+            }
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+            y: { beginAtZero: false, ticks: { font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.05)' } }
+          }
+        }
+      });
+    }
+
+    function renderNsWeekBreakdown() {
+      const row = nsProfileRow;
+      const metric = nsProfileMetric;
+      const bp = row._blueprintAvg;
+      let html = '<table class="ns-week-breakdown-table"><thead><tr>';
+      html += '<th style="text-align:left">Week</th><th>Days Worked</th><th>' + (metric === 'max' ? 'Max' : 'Avg') + ' Stops</th><th>Blueprint</th><th>% Achievement</th><th>Target %</th><th>Status</th>';
+      html += '</tr></thead><tbody>';
+      let hasData = false;
+      for (let w = 1; w <= 10; w++) {
+        const daysWorked = parseInt(row['week_' + w + '_days_worked']) || 0;
+        const val = metric === 'max'
+          ? (parseInt(row['week_' + w + '_max_stops']) || 0)
+          : (parseFloat(row['week_' + w + '_avg_stops']) || 0);
+        const pct = bp > 0 && val > 0 ? (val / bp) * 100 : null;
+        const target = NS_WEEK_TARGETS[w - 1];
+        const colorClass = getNsColor(pct, w);
+        const statusMap = { green: '✓ On Track', amber: '~ Close', red: '✗ Below Target' };
+        if (daysWorked > 0 || w <= 5) {
+          hasData = true;
+          const bpDisplay = bp > 0 ? bp.toFixed(0) : '—';
+          const valDisplay = daysWorked > 0 && val > 0 ? val.toFixed(metric === 'avg' ? 1 : 0) : '—';
+          const pctDisplay = pct !== null ? Math.round(pct) + '%' : '—';
+          const status = daysWorked === 0 ? '—' : (statusMap[colorClass] || '—');
+          const cellStyle = colorClass && daysWorked > 0 ? `background:${colorClass === 'green' ? '#d4edda' : colorClass === 'amber' ? '#fff3cd' : '#f8d7da'}` : '';
+          html += `<tr>
+            <td>Week ${w}</td><td>${daysWorked}</td><td>${valDisplay}</td><td>${bpDisplay}</td>
+            <td style="${cellStyle};font-weight:700">${pctDisplay}</td>
+            <td>${target}%</td>
+            <td style="${cellStyle}">${status}</td>
+          </tr>`;
+        }
+      }
+      if (!hasData) html += '<tr><td colspan="7" style="text-align:center;color:#999;padding:16px">No data available</td></tr>';
+      html += '</tbody></table>';
+      document.getElementById('nsWeekBreakdown').innerHTML = html;
+    }
+  </script>
+</body>
+</html>
