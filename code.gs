@@ -469,7 +469,7 @@ function buildNsEmailHtml(totalDrivers, netPcts, regionEntries, datastudioUrl, d
 
   return '<!DOCTYPE html><html><head><meta charset="UTF-8"></head>'
     + '<body style="font-family:Arial,sans-serif;color:#333333;background:#f4f4f4;margin:0;padding:20px">'
-    + '<div style="max-width:900px;margin:0 auto;background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12)">'
+    + '<div style="max-width:1090px;margin:0 auto;background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12)">'
     + '<div style="background:#DC0032;padding:24px 28px">'
     + '<div style="font-size:22px;font-weight:800;color:white;letter-spacing:-0.5px">DPD | New Starters vs Blueprint</div>'
     + '<div style="margin-top:6px;color:rgba(255,255,255,0.85);font-size:14px">Monday ' + dateStr + '</div>'
@@ -521,7 +521,9 @@ function buildDepotPdf(depotRows, dateStr) {
   var headers = ['Region', 'Depot', 'Drivers', 'Week 1 (Target: 40%)', 'Week 2 (Target: 60%)', 'Week 3 (Target: 80%)', 'Week 4 (Target: 100%)', 'Week 5 (Target: 100%)'];
   sheet.getRange(3, 1, 1, COL_COUNT).setValues([headers])
     .setBackground('#333333').setFontColor('white')
-    .setFontWeight('bold').setFontSize(10);
+    .setFontWeight('bold').setFontSize(10)
+    .setHorizontalAlignment('center');
+  sheet.getRange(3, 1, 1, 2).setHorizontalAlignment('left'); // Region/Depot left-aligned
   sheet.setRowHeight(3, 26);
 
   if (depotRows.length > 0) {
@@ -544,6 +546,7 @@ function buildDepotPdf(depotRows, dateStr) {
       }
       row.pcts.forEach(function(pct, weekIdx) {
         var cell = sheet.getRange(sheetRow, 4 + weekIdx);
+        cell.setHorizontalAlignment('center');
         if (pct === null) { cell.setBackground('#f5f5f5').setFontColor('#999999'); return; }
         var target = weekTargets[weekIdx];
         if (pct >= target)           { cell.setBackground('#d4edda').setFontColor('#155724').setFontWeight('bold'); }
